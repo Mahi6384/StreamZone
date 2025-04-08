@@ -4,10 +4,7 @@ const mongoURI = process.env.MONGO_URI;
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(mongoURI, {
-      // useNewParder: true,
-      // useUnifiedTopology: true,
-    });
+    await mongoose.connect(mongoURI, {});
     console.log("mongodb is working");
   } catch (err) {
     console.log("Error aagyi bhaisaab   ", err);
