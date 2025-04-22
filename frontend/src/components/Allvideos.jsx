@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlay } from "@fortawesome/free-solid-svg-icons";
-
+import { useNavigate } from "react-router-dom";
 const Allvideos = () => {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchVideos = async () => {
       try {
@@ -34,7 +35,8 @@ const Allvideos = () => {
         <div className="p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {videos.map((video) => (
             <div
-              key={video.id}
+              onClick={() => navigate(`watch/${video._id}`)}
+              key={video._id}
               className="card bg-base-100 shadow-md hover:scale-105 transition-transform"
             >
               <figure className="relative overflow-hidden rounded-lg shadow-lg group">
