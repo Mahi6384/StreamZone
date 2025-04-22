@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes sparkle {
+  0%,
+  100% {
+    text-shadow: 0 0 2px #fff, 0 0 5px #ff0, 0 0 10px #f0f, 0 0 20px #0ff;
+  }
+  50% {
+    text-shadow: 0 0 2px #fff, 0 0 5px #0ff, 0 0 20px #f0f, 0 0 3px #ff0;
+  }
+}
+
+.sparkly-text {
+  animation: sparkle 2s infinite;
+  font-weight: bold;
+  color: rgb(30, 34, 20);
+}
