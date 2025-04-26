@@ -1,14 +1,59 @@
 import React, { useState } from "react";
-
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import toast, { ToastBar } from "react-hot-toast";
 const AuthForm = ({ title, buttonText, showName }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  // const [formdata, setFormdata] = useState({
+  //   name: "Mahi",
+  //   email: "mahiii@gmail.com",
+  //   password: "mahijain",
+  // });
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (showName) {
+      try {
+        const res = await axios.post("http://localhost:5000/api/users/signup", {
+          name,
+          email,
+          password,
+        });
+        console.log(res.data);
+        navigate("/ ");
+        toast.success("Signup successful!");
+      } catch (error) {
+        toast.error("Error Signing Up");
+        console.error("Signup error:", error.response?.data || error.message);
+      }
+    } else {
+      try {
+        const res = await axios.post("http://localhost:5000/api/users/login", {
+          email,
+          password,
+        });
+        console.log(res.data);
+        navigate("/ ");
+        toast.success("Login successful!");
+      } catch (error) {
+        console.error("Signup error:", error.response?.data || error.message);
+        toast.error("Error Loging In");
+      }
+    }
+
     const formData = showName ? { name, email, password } : { email, password };
+    // console.log("first");
   };
+  // const handleChange = (e) => {
+  //   setFormdata({
+  //     ...formdata,
+  //     [e.target.name]: e.target.value,
+  //   });
+  // };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white px-4">
@@ -27,6 +72,7 @@ const AuthForm = ({ title, buttonText, showName }) => {
                 className="input input-bordered w-full"
                 placeholder="Your name"
                 value={name}
+                // value={formdata.name}
                 onChange={(e) => setName(e.target.value)}
               />
             </div>
@@ -40,6 +86,7 @@ const AuthForm = ({ title, buttonText, showName }) => {
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              // onChange={handleChange}
             />
           </div>
 
@@ -51,6 +98,7 @@ const AuthForm = ({ title, buttonText, showName }) => {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              // onChange={handleChange}
             />
           </div>
         </form>
@@ -59,7 +107,12 @@ const AuthForm = ({ title, buttonText, showName }) => {
           {showName && (
             <p className="text-md text-gray-400 mt-4">
               Already a user?{" "}
-              <span className="text-blue-400 cursor-pointer">Login</span>
+              <span
+                className="text-blue-400 cursor-pointer"
+                onClick={() => navigate("/login")}
+              >
+                Login
+              </span>
             </p>
           )}
 
