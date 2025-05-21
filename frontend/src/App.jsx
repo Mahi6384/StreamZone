@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import WatchPage from "./pages/WatchPage";
+import UploadPage from "./pages/UploadPage";
 import { Toaster } from "react-hot-toast";
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/upload" element={<UploadPage />} />
         <Route path="/watch/:id" element={<WatchPage />} />
       </Routes>
     </BrowserRouter>

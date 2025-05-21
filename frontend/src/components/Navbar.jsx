@@ -1,6 +1,7 @@
 import React from "react";
-
+import { useNavigate } from "react-router-dom";
 const Navbar = () => {
+  const navigate = useNavigate();
   return (
     <div className="navbar bg-base-100 shadow-sm px-4 relative">
       {/* LEFT: Logo */}
@@ -29,8 +30,8 @@ const Navbar = () => {
           >
             <div className="w-10 rounded-full">
               <img
-                alt=" Upload Profile"
-                // src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
+                alt="Upload Profile"
+                src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
               />
             </div>
           </div>
@@ -39,7 +40,10 @@ const Navbar = () => {
             className="menu menu-sm dropdown-content bg-base-100 rounded-box z-50 mt-3 w-52 p-2 shadow"
           >
             <li>
-              <a className="justify-between">
+              <a
+                className="justify-between"
+                onClick={() => navigate("/upload")} // No navigate now!
+              >
                 Upload Video <span className="badge">Upload</span>
               </a>
             </li>
@@ -48,7 +52,6 @@ const Navbar = () => {
                 Profile <span className="badge">Change Profile</span>
               </a>
             </li>
-
             <li>
               <a>Logout</a>
             </li>

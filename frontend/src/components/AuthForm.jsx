@@ -74,6 +74,7 @@ const AuthForm = ({ title, buttonText, showName }) => {
                 value={name}
                 // value={formdata.name}
                 onChange={(e) => setName(e.target.value)}
+                required
               />
             </div>
           )}
@@ -86,6 +87,7 @@ const AuthForm = ({ title, buttonText, showName }) => {
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
               // onChange={handleChange}
             />
           </div>
@@ -98,6 +100,7 @@ const AuthForm = ({ title, buttonText, showName }) => {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
               // onChange={handleChange}
             />
           </div>

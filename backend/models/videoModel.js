@@ -10,8 +10,8 @@ const videoSchema = new mongoose.Schema({
     type: String,
     default: "https://dummyimage.com/320x180/cccccc/000000&text=No+Thumbnail",
   },
-  likes: { type: Number, default: 25 },
-  dislikes: { type: Number, default: 2 },
+  likes: { type: Number, default: 0 },
+  dislikes: { type: Number, default: 0 },
 });
 
 // creating the model
