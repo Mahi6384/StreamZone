@@ -3,7 +3,11 @@ import AuthForm from "../components/AuthForm";
 function Signup() {
   return (
     <div>
-      <AuthForm title="SignUp" buttonText="Create Account" showName={true} />
+      <AuthForm
+        title="Create Account"
+        buttonText="Create Account"
+        showName={true}
+      />
     </div>
   );
 }

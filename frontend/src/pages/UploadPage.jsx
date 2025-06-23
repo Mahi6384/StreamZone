@@ -32,28 +32,29 @@ const UploadPage = () => {
       console.log(error);
     }
   };
-
+  // sm:w-4/5 md:w-1/2 border border-gray-500 rounded-2xl shadow-xl p-8 flex flex-col justify-between bg-white/10 backdrop-blur-3xl"
   return (
-    <div className="max-w-2xl mx-auto mt-10 p-4 bg-black rounded-xl shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-center">Upload Video</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="text"
-          placeholder="Video Title"
-          className="w-full p-2 border rounded"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
+    <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white px-4">
+      <div className="max-w-2xl mx-auto mt-10  bg-white/10 backdrop-blur-3xl  border-gray-500 border rounded-2xl shadow-xl p-8 ">
+        <h2 className="text-2xl font-bold mb-6 text-center ">Upload Video</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            placeholder="Video Title"
+            className="w-full p-2 border rounded"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
 
-        <textarea
-          placeholder="Description"
-          className="w-full p-2 border rounded"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          required
-        />
-        {/* <input
+          <textarea
+            placeholder="Description"
+            className="w-full p-2 border rounded"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+          />
+          {/* <input
           type="text"
           placeholder="Uploaded By"
           className="w-full p-2 border rounded"
@@ -61,20 +62,21 @@ const UploadPage = () => {
           onChange={(e) => setTitle(e.target.value)}
           required
         /> */}
-        <input
-          type="file"
-          accept="video/*"
-          onChange={(e) => setFile(e.target.files[0])}
-          required
-        />
-        <button
-          // onClick={() => console.log("Mahi")}
-          type="submit"
-          className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
-        >
-          Upload
-        </button>
-      </form>
+          <input
+            type="file"
+            accept="video/*"
+            onChange={(e) => setFile(e.target.files[0])}
+            required
+          />
+          <button
+            // onClick={() => console.log("Mahi")}
+            type="submit"
+            className="w-2/5 bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+          >
+            Upload
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

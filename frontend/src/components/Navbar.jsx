@@ -6,7 +6,7 @@ const Navbar = () => {
     <div className="navbar bg-base-100 shadow-sm px-4 relative">
       {/* LEFT: Logo */}
       <div className="flex-1">
-        <a className="text-2xl bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 text-transparent bg-clip-text animate-pulse">
+        <a className="text-3xl  bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 text-transparent bg-clip-text  ml-12">
           StreamZone
         </a>
       </div>
@@ -19,7 +19,19 @@ const Navbar = () => {
           className="input input-bordered w-full"
         />
       </div>
-
+      <button
+        onClick={() => navigate("/upload")}
+        className=" btn mr-5 text-transparent text-white "
+        // bg-clip-text bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500  text-lg "
+      >
+        Upload Video
+      </button>
+      <h3
+        onClick={() => navigate("/signup")}
+        className="mr-3 text-sm text-gray-500 hover:text-white cursor-pointer"
+      >
+        Register/Login
+      </h3>
       {/* RIGHT: Avatar Dropdown */}
       <div className="flex-none">
         <div className="dropdown dropdown-end">
