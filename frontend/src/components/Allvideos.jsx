@@ -1,17 +1,27 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlay } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from "react-router-dom";
+import { HiPlay } from "react-icons/hi";
+import { useNavigate, useLocation } from "react-router-dom";
+
 const Allvideos = () => {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const theme = localStorage.getItem("theme") || "dark";
+
   useEffect(() => {
     const fetchVideos = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/videos");
+        setLoading(true);
+        const searchParams = new URLSearchParams(location.search);
+        const search = searchParams.get("search");
+        const url = search 
+          ? `http://localhost:5000/api/videos?search=${search}` 
+          : "http://localhost:5000/api/videos";
+        
+        const res = await axios.get(url);
         setVideos(res.data);
       } catch (err) {
         console.log("Error fetching Videos", err);
@@ -21,57 +31,81 @@ const Allvideos = () => {
       }
     };
     fetchVideos();
-  }, []);
+  }, [location.search]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <span className="loading loading-ring loading-lg text-red-600"></span>
+        <p className={`${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'} font-medium animate-pulse`}>Searching for the best content...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-20">
+        <p className="text-red-500 font-bold text-xl">{error}</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className={`mt-4 px-6 py-2 ${theme === 'dark' ? 'bg-white/10 hover:bg-white/20' : 'bg-black/5 hover:bg-black/10'} rounded-full transition-colors`}
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      {loading ? (
-        <div className="text-center text-lg font-semibold text-gray-500">
-          Loading videos...
+    <div className={`pt-24 pb-12 px-6 sm:px-10 min-h-screen ${theme === 'dark' ? 'bg-[#0f0f0f]' : 'bg-white'} transition-colors`}>
+      {!videos || videos.length === 0 ? (
+        <div className={`text-center py-40 ${theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-black/5 border-black/5'} rounded-3xl border`}>
+          <p className="text-gray-400 text-xl font-medium">No videos available at the moment.</p>
+          <p className="text-gray-500 text-sm mt-2">Check back later or upload your own!</p>
         </div>
-      ) : error ? (
-        <div className="text-center text-red-600 font-semibold">{error}</div>
-      ) : videos.length > 0 ? (
-        <div className="p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-y-10 gap-x-6">
           {videos.map((video) => (
             <div
-              onClick={() => navigate(`watch/${video._id}`)}
               key={video._id}
-              className="card bg-base-100 shadow-md hover:scale-105 transition-transform"
+              onClick={() => navigate(`/watch/${video._id}`)}
+              className="group cursor-pointer"
             >
-              <figure className="relative overflow-hidden rounded-lg shadow-lg group">
+              <div className="relative aspect-video rounded-xl overflow-hidden shadow-2xl transition-all duration-500 group-hover:scale-[1.03] group-hover:shadow-red-600/10 active:scale-95">
                 <img
-                  src={video.thumbnail}
+                  src={video.thumbnail || "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=600&auto=format&fit=crop"}
                   alt={video.title}
-                  className="w-full h-48 object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   onError={(e) => {
                     e.target.onerror = null;
-                    e.target.src =
-                      "https://dummyimage.com/320x180/cccccc/000000&text=No+Thumbnail";
+                    e.target.src = "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=600&auto=format&fit=crop";
                   }}
                 />
-                <div
-                  className="absolute inset-0 bg-black bg-opacity-30 opacity-0 group-hover:opacity-100 transition duration-300  flex flex-col
- items-center justify-center"
-                >
-                  <FontAwesomeIcon
-                    icon={faPlay}
-                    className="text-white text-4xl"
-                  />
-
-                  <p className="text-white text-sm">Watch Now</p>
+                
+                {/* Overlay on Hover */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
+                <div className="absolute inset-0 flex items-center justify-center translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                  <div className="w-14 h-14 bg-red-600 rounded-full flex items-center justify-center shadow-2xl">
+                    <HiPlay className="text-white text-3xl ml-1" />
+                  </div>
                 </div>
-              </figure>
+              </div>
 
-              <div className="card-body p-4">
-                <h2 className="card-title text-base">{video.title}</h2>
-                <p className="text-sm text-gray-500">{video.creator}</p>
+              <div className="mt-4 flex gap-3">
+                <div className="flex-1">
+                  <h3 className={`${theme === 'dark' ? 'text-white' : 'text-black'} font-bold text-sm sm:text-base line-clamp-2 group-hover:text-red-500 transition-colors`}>
+                    {video.title}
+                  </h3>
+                  <div className="mt-1 flex items-center gap-2 text-xs sm:text-sm text-gray-400">
+                    <span className="hover:text-red-500 transition-colors">{video.creator || "Anonymous"}</span>
+                    <span>•</span>
+                    <span>{new Date(video.createdAt).toLocaleDateString() || "Recently"}</span>
+                  </div>
+                </div>
               </div>
             </div>
           ))}
         </div>
-      ) : (
-        <div className="text-center text-gray-500">No videos available....</div>
       )}
     </div>
   );
