@@ -2,18 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  body {
+    @apply transition-colors duration-300;
+    font-family: 'Inter', sans-serif;
+  }
+  body.dark-mode {
+    @apply bg-[#0f0f0f] text-[#f1f1f1];
+  }
+  body.light-mode {
+    @apply bg-white text-black;
+  }
+}
+
+/* Custom Scrollbar for a Premium Look */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f0f0f;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f3f;
+}
+
 @keyframes sparkle {
-  0%,
-  100% {
-    text-shadow: 0 0 2px #fff, 0 0 5px #ff0, 0 0 10px #f0f, 0 0 20px #0ff;
+  0%, 100% {
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.4), 0 0 10px rgba(255, 25, 25, 0.2);
   }
   50% {
-    text-shadow: 0 0 2px #fff, 0 0 5px #0ff, 0 0 20px #f0f, 0 0 3px #ff0;
+    text-shadow: 0 0 8px rgba(255, 25, 25, 0.4), 0 0 15px rgba(255, 255, 255, 0.2);
   }
 }
 
 .sparkly-text {
-  animation: sparkle 2s infinite;
-  font-weight: bold;
-  color: rgb(30, 34, 20);
+  animation: sparkle 3s ease-in-out infinite;
+  background: linear-gradient(to right, #ff4d4d, #f9cb28, #ff4d4d);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: 0.5s;
+}
+
+.sparkly-text:hover {
+  background-position: right center;
+}
+
+/* Glassmorphism utility */
+.glass {
+  @apply bg-white/5 backdrop-blur-xl border border-white/10;
 }
