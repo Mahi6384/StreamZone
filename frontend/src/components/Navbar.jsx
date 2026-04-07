@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import AuthModal from "./AuthModal";
 import { HiDocumentAdd, HiUserCircle } from "react-icons/hi";
 import { navBg, ghostButton, primaryButton } from "../theme/ui";
+import { useTheme } from "../context/ThemeContext";
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [scrolled, setScrolled] = useState(false);
-  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 12);
@@ -22,19 +23,6 @@ const Navbar = () => {
     if (storedUser) setUser(JSON.parse(storedUser));
     else setUser(null);
   }, [isAuthModalOpen]);
-
-  useEffect(() => {
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-      document.body.classList.add("dark-mode");
-      document.body.classList.remove("light-mode");
-    } else {
-      document.documentElement.classList.remove("dark");
-      document.body.classList.add("light-mode");
-      document.body.classList.remove("dark-mode");
-    }
-    localStorage.setItem("theme", theme);
-  }, [theme]);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -52,7 +40,7 @@ const Navbar = () => {
     else setIsAuthModalOpen(true);
   };
 
-  const toggleTheme = () => setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
 
   const navSurface = `${navBg(theme, scrolled)} backdrop-blur-sm`;
 
@@ -60,16 +48,16 @@ const Navbar = () => {
     <nav
       className={`fixed top-0 left-0 right-0 z-[100] transition-colors duration-200 ${navSurface}`}
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-3 py-2 sm:px-5">
         <button
           type="button"
           onClick={() => navigate("/")}
           className="shrink-0 text-left"
         >
-          <span className="block text-lg font-semibold tracking-tight text-blue-500 sm:text-xl">
+          <span className="block text-base font-semibold tracking-tight text-blue-500 sm:text-lg">
             InterviewShare
           </span>
-          <span className="hidden text-[10px] font-medium uppercase tracking-wider text-slate-500 sm:block">
+          <span className="hidden text-[9px] font-medium uppercase tracking-wider text-slate-500 sm:block">
             Interview knowledge
           </span>
         </button>
