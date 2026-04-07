@@ -14,7 +14,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: "streamzone/videos",
+    folder: "streamzone/experiences",
     resource_type: "video", // CRITICAL for video uploads
     allowed_formats: ["mp4", "mkv", "avi", "mov"],
     public_id: (req, file) => {
