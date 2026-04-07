@@ -72,7 +72,7 @@ const AuthModal = ({ isOpen, onClose }) => {
           {isLogin ? (
             <AuthForm title="Welcome back" buttonText="Sign in" showName={false} onClose={onClose} />
           ) : (
-            <AuthForm title="Join InterviewShare" buttonText="Create account" showName={true} onClose={onClose} />
+            <AuthForm title="Join InsightHire" buttonText="Create account" showName={true} onClose={onClose} />
           )}
         </div>
       </div>

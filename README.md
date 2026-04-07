@@ -1,6 +1,6 @@
-# 🎬 StreamZone
+# InsightHire
 
-**StreamZone** is a full-stack video streaming platform where users can upload, watch, like/dislike, and comment on videos — similar to a simplified version of YouTube. It features user authentication (email/password & Google), video search, and a clean, responsive UI.
+**InsightHire** is a full-stack platform for sharing structured interview experiences: questions discussed, tips, prep notes, and optional recordings — helping candidates learn from real interview loops.
 
 This project is built for learning and showcasing complete frontend-backend integration using **React**, **Node.js**, **Express**, and **MongoDB**.
 
