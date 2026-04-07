@@ -6,7 +6,7 @@ const experienceRoutes = require("./routes/experienceRoutes");
 const userRoutes = require("./routes/userRoutes");
 const path = require("path");
 const cors = require("cors");
-const PORT = 5000;
+const PORT = process.env.PORT ? Number(process.env.PORT) : 5000;
 const app = express();
 
 app.use(cors());

@@ -28,8 +28,14 @@ const ShareExperiencePage = () => {
   const [role, setRole] = useState("");
   const [experienceLevel, setExperienceLevel] = useState("SDE1");
   const [interviewRounds, setInterviewRounds] = useState("3");
+  const [detailsNotes, setDetailsNotes] = useState("");
+  const [detailsNoteImages, setDetailsNoteImages] = useState([]);
   const [questionsText, setQuestionsText] = useState("");
+  const [questionsNotes, setQuestionsNotes] = useState("");
+  const [questionsNoteImages, setQuestionsNoteImages] = useState([]);
   const [tips, setTips] = useState("");
+  const [tipsNotes, setTipsNotes] = useState("");
+  const [howToPrepare, setHowToPrepare] = useState("");
   const [outcome, setOutcome] = useState("");
   const [visibility, setVisibility] = useState("public");
   const [file, setFile] = useState(null);
@@ -57,7 +63,7 @@ const ShareExperiencePage = () => {
     const formData = new FormData();
     formData.append("title", title);
     formData.append("description", description);
-    formData.append("video", file);
+    if (file) formData.append("video", file);
     formData.append("candidate", user.name || "Anonymous");
     if (userId) formData.append("candidateId", userId);
     formData.append("visibility", visibility);
@@ -65,8 +71,14 @@ const ShareExperiencePage = () => {
     formData.append("role", role);
     formData.append("experienceLevel", experienceLevel);
     formData.append("interviewRounds", interviewRounds);
+    if (detailsNotes) formData.append("detailsNotes", detailsNotes);
+    detailsNoteImages.forEach((img) => formData.append("detailsNotesImages", img));
     formData.append("questions", JSON.stringify(lines));
+    if (questionsNotes) formData.append("questionsNotes", questionsNotes);
+    questionsNoteImages.forEach((img) => formData.append("questionsNotesImages", img));
     formData.append("tips", tips);
+    if (tipsNotes) formData.append("tipsNotes", tipsNotes);
+    if (howToPrepare) formData.append("howToPrepare", howToPrepare);
     if (outcome) formData.append("outcome", outcome);
 
     try {
@@ -192,6 +204,62 @@ const ShareExperiencePage = () => {
             </div>
 
             <div>
+              <label className={labelCls} htmlFor="se-details-notes">
+                Interview details notes (optional)
+              </label>
+              <textarea
+                id="se-details-notes"
+                placeholder="Anything to add about rounds, format, recruiter screen, take-home, etc."
+                rows={3}
+                value={detailsNotes}
+                onChange={(e) => setDetailsNotes(e.target.value)}
+                className={textareaCls(theme)}
+              />
+              <div className="mt-2">
+                <label className={`${labelCls} !text-[10px]`} htmlFor="se-details-notes-images">
+                  Attach images (optional)
+                </label>
+                <input
+                  id="se-details-notes-images"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className={inputCls(theme)}
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    if (files.length) setDetailsNoteImages((prev) => [...prev, ...files]);
+                    e.target.value = "";
+                  }}
+                />
+                {detailsNoteImages.length ? (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {detailsNoteImages.map((f, idx) => (
+                      <div
+                        key={`${f.name}-${idx}`}
+                        className={`flex items-center gap-2 rounded-md border px-2 py-1 text-xs ${
+                          theme === "dark"
+                            ? "border-slate-700 bg-slate-900/40 text-slate-200"
+                            : "border-slate-200 bg-slate-50 text-slate-700"
+                        }`}
+                      >
+                        <span className="max-w-[180px] truncate">{f.name}</span>
+                        <button
+                          type="button"
+                          className="text-slate-500 hover:text-red-500"
+                          onClick={() =>
+                            setDetailsNoteImages((prev) => prev.filter((_, i) => i !== idx))
+                          }
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
+            <div>
               <label className={labelCls} htmlFor="se-questions">
                 Questions (one per line)
               </label>
@@ -206,6 +274,62 @@ const ShareExperiencePage = () => {
             </div>
 
             <div>
+              <label className={labelCls} htmlFor="se-questions-notes">
+                Questions notes (optional)
+              </label>
+              <textarea
+                id="se-questions-notes"
+                placeholder="Context around the questions: difficulty, follow-ups, constraints, or focus areas."
+                rows={3}
+                value={questionsNotes}
+                onChange={(e) => setQuestionsNotes(e.target.value)}
+                className={textareaCls(theme)}
+              />
+              <div className="mt-2">
+                <label className={`${labelCls} !text-[10px]`} htmlFor="se-questions-notes-images">
+                  Attach images (optional)
+                </label>
+                <input
+                  id="se-questions-notes-images"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className={inputCls(theme)}
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    if (files.length) setQuestionsNoteImages((prev) => [...prev, ...files]);
+                    e.target.value = "";
+                  }}
+                />
+                {questionsNoteImages.length ? (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {questionsNoteImages.map((f, idx) => (
+                      <div
+                        key={`${f.name}-${idx}`}
+                        className={`flex items-center gap-2 rounded-md border px-2 py-1 text-xs ${
+                          theme === "dark"
+                            ? "border-slate-700 bg-slate-900/40 text-slate-200"
+                            : "border-slate-200 bg-slate-50 text-slate-700"
+                        }`}
+                      >
+                        <span className="max-w-[180px] truncate">{f.name}</span>
+                        <button
+                          type="button"
+                          className="text-slate-500 hover:text-red-500"
+                          onClick={() =>
+                            setQuestionsNoteImages((prev) => prev.filter((_, i) => i !== idx))
+                          }
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
+            <div>
               <label className={labelCls} htmlFor="se-tips">
                 Tips for others
               </label>
@@ -215,6 +339,34 @@ const ShareExperiencePage = () => {
                 rows={3}
                 value={tips}
                 onChange={(e) => setTips(e.target.value)}
+                className={textareaCls(theme)}
+              />
+            </div>
+
+            <div>
+              <label className={labelCls} htmlFor="se-tips-notes">
+                Tips notes (optional)
+              </label>
+              <textarea
+                id="se-tips-notes"
+                placeholder="Add extra notes, resources, links, or what you wish you knew."
+                rows={3}
+                value={tipsNotes}
+                onChange={(e) => setTipsNotes(e.target.value)}
+                className={textareaCls(theme)}
+              />
+            </div>
+
+            <div>
+              <label className={labelCls} htmlFor="se-how-to-prepare">
+                How to prepare (optional)
+              </label>
+              <textarea
+                id="se-how-to-prepare"
+                placeholder="Share a prep plan: topics, practice, resources, timeline, and what mattered most."
+                rows={4}
+                value={howToPrepare}
+                onChange={(e) => setHowToPrepare(e.target.value)}
                 className={textareaCls(theme)}
               />
             </div>
@@ -269,7 +421,7 @@ const ShareExperiencePage = () => {
             <div>
               <span className={labelCls}>Recording file</span>
               <p className="mb-2 text-xs text-slate-500">
-                MP4, MOV, or similar — walkthrough of your interview experience.
+                Optional. MP4, MOV, or similar — walkthrough of your interview experience.
               </p>
               <input
                 type="file"
@@ -277,7 +429,6 @@ const ShareExperiencePage = () => {
                 id="file-upload"
                 className="hidden"
                 onChange={(e) => setFile(e.target.files[0])}
-                required
               />
               <label
                 htmlFor="file-upload"

@@ -28,7 +28,7 @@ const AuthForm = ({ title, buttonText, showName, onClose }) => {
     try {
       const res = await axios.post(`http://localhost:5000/api/users/${endpoint}`, payload);
       localStorage.setItem("user", JSON.stringify(res.data.user));
-      toast.success(`${showName ? "Welcome to InterviewShare." : "Signed in successfully."}`);
+      toast.success(`${showName ? "Welcome to InsightHire." : "Signed in successfully."}`);
       if (onClose) onClose();
       navigate("/");
     } catch (error) {

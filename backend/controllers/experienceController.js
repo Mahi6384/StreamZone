@@ -43,8 +43,14 @@ function normalizeExperience(doc) {
     role: o.role || "",
     experienceLevel: o.experienceLevel || "Other",
     interviewRounds: o.interviewRounds ?? 1,
+    detailsNotes: o.detailsNotes || "",
+    detailsNotesImages: Array.isArray(o.detailsNotesImages) ? o.detailsNotesImages : [],
     questions: Array.isArray(o.questions) ? o.questions : [],
+    questionsNotes: o.questionsNotes || "",
+    questionsNotesImages: Array.isArray(o.questionsNotesImages) ? o.questionsNotesImages : [],
     tips: o.tips || "",
+    tipsNotes: o.tipsNotes || "",
+    howToPrepare: o.howToPrepare || "",
     outcome: o.outcome || null,
     createdAt: o.createdAt,
     updatedAt: o.updatedAt,
@@ -141,12 +147,15 @@ const getAllExperiences = async (req, res) => {
 
 const shareExperience = async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No video file provided" });
-    }
-
-    const url = req.file.path;
-    const thumbnail = url.replace(/\.[^/.]+$/, ".jpg");
+    const videoFile = req.files?.video?.[0];
+    const url = videoFile?.path;
+    const thumbnail = url ? url.replace(/\.[^/.]+$/, ".jpg") : undefined;
+    const detailsNotesImages = (req.files?.detailsNotesImages || [])
+      .map((f) => f.path)
+      .filter(Boolean);
+    const questionsNotesImages = (req.files?.questionsNotesImages || [])
+      .map((f) => f.path)
+      .filter(Boolean);
 
     const {
       title,
@@ -158,8 +167,12 @@ const shareExperience = async (req, res) => {
       role,
       experienceLevel,
       interviewRounds,
+      detailsNotes,
       questions: questionsRaw,
+      questionsNotes,
       tips,
+      tipsNotes,
+      howToPrepare,
       outcome,
     } = req.body;
 
@@ -197,8 +210,6 @@ const shareExperience = async (req, res) => {
       title: String(title).trim(),
       description: description ? String(description).trim() : "",
       candidate: candidate ? String(candidate).trim() : "Anonymous",
-      videoUrl: url,
-      thumbnail,
       visibility: vis,
       company: String(company).trim(),
       role: String(role).trim(),
@@ -207,6 +218,22 @@ const shareExperience = async (req, res) => {
       questions,
       tips: tips ? String(tips).trim() : "",
     };
+    if (detailsNotes != null && String(detailsNotes).trim()) {
+      payload.detailsNotes = String(detailsNotes).trim();
+    }
+    if (detailsNotesImages.length) payload.detailsNotesImages = detailsNotesImages;
+    if (questionsNotes != null && String(questionsNotes).trim()) {
+      payload.questionsNotes = String(questionsNotes).trim();
+    }
+    if (questionsNotesImages.length) payload.questionsNotesImages = questionsNotesImages;
+    if (tipsNotes != null && String(tipsNotes).trim()) {
+      payload.tipsNotes = String(tipsNotes).trim();
+    }
+    if (howToPrepare != null && String(howToPrepare).trim()) {
+      payload.howToPrepare = String(howToPrepare).trim();
+    }
+    if (url) payload.videoUrl = url;
+    if (thumbnail) payload.thumbnail = thumbnail;
     if (outcomeVal) payload.outcome = outcomeVal;
 
     if (candidateId && String(candidateId).match(/^[0-9a-fA-F]{24}$/)) {
