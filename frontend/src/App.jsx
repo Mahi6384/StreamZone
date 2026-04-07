@@ -7,6 +7,7 @@ import MyExperiences from "./pages/MyExperiences";
 import ExperienceDetail from "./components/ExperienceDetail";
 import ThemedToaster from "./components/ThemedToaster";
 import Navbar from "./components/Navbar";
+import { ThemeProvider } from "./context/ThemeContext";
 
 function LegacyWatchRedirect() {
   const { id } = useParams();
@@ -16,19 +17,21 @@ function LegacyWatchRedirect() {
 function App() {
   return (
     <BrowserRouter>
-      <ThemedToaster />
-      <Navbar />
-      <Routes>
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Home />} />
-        <Route path="/share" element={<ShareExperiencePage />} />
-        <Route path="/upload" element={<Navigate to="/share" replace />} />
-        <Route path="/experience/:id" element={<ExperienceDetail />} />
-        <Route path="/watch/:id" element={<LegacyWatchRedirect />} />
-        <Route path="/my-experiences" element={<MyExperiences />} />
-        <Route path="/my-uploads" element={<Navigate to="/my-experiences" replace />} />
-      </Routes>
+      <ThemeProvider>
+        <ThemedToaster />
+        <Navbar />
+        <Routes>
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/share" element={<ShareExperiencePage />} />
+          <Route path="/upload" element={<Navigate to="/share" replace />} />
+          <Route path="/experience/:id" element={<ExperienceDetail />} />
+          <Route path="/watch/:id" element={<LegacyWatchRedirect />} />
+          <Route path="/my-experiences" element={<MyExperiences />} />
+          <Route path="/my-uploads" element={<Navigate to="/my-experiences" replace />} />
+        </Routes>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }

@@ -1,8 +1,9 @@
 import React from "react";
 import { Toaster } from "react-hot-toast";
+import { useTheme } from "../context/ThemeContext";
 
 export default function ThemedToaster() {
-  const theme = localStorage.getItem("theme") || "dark";
+  const { theme } = useTheme();
   const isDark = theme === "dark";
 
   return (
