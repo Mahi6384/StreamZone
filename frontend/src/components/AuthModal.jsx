@@ -3,21 +3,22 @@ import { createPortal } from "react-dom";
 import AuthForm from "./AuthForm";
 import { IoClose } from "react-icons/io5";
 import { panel } from "../theme/ui";
+import { useTheme } from "../context/ThemeContext";
 
 const AuthModal = ({ isOpen, onClose }) => {
   const [isLogin, setIsLogin] = useState(true);
-  const theme = localStorage.getItem("theme") || "dark";
+  const { theme } = useTheme();
 
   if (!isOpen) return null;
 
   // Portal: nav uses backdrop-blur, which makes fixed descendants position vs the nav
   // box instead of the viewport — portal escapes that so the overlay covers the page.
   return createPortal(
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-4">
       <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm" onClick={onClose} aria-hidden />
 
       <div
-        className={`relative w-full max-w-md overflow-hidden rounded-xl shadow-xl ${panel(theme)}`}
+        className={`relative w-full max-w-sm overflow-hidden rounded-lg shadow-xl sm:max-w-md ${panel(theme)}`}
         role="dialog"
         aria-modal="true"
       >
@@ -41,7 +42,7 @@ const AuthModal = ({ isOpen, onClose }) => {
         >
           <button
             type="button"
-            className={`flex-1 py-4 text-sm font-semibold transition-colors ${
+            className={`flex-1 py-3 text-sm font-semibold transition-colors ${
               isLogin
                 ? "border-b-2 border-blue-500 text-blue-500"
                 : theme === "dark"
@@ -54,7 +55,7 @@ const AuthModal = ({ isOpen, onClose }) => {
           </button>
           <button
             type="button"
-            className={`flex-1 py-4 text-sm font-semibold transition-colors ${
+            className={`flex-1 py-3 text-sm font-semibold transition-colors ${
               !isLogin
                 ? "border-b-2 border-blue-500 text-blue-500"
                 : theme === "dark"

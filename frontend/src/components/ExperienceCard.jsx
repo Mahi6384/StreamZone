@@ -42,12 +42,12 @@ export default function ExperienceCard({
       }}
       className={`${panel(
         theme
-      )} rounded-xl p-4 cursor-pointer transition-colors hover:border-slate-500/60 ${
+      )} rounded-lg p-3 cursor-pointer transition-colors hover:border-slate-500/60 ${
         theme === "dark" ? "hover:bg-slate-900/80" : "hover:bg-slate-50/90"
       } ${className}`.trim()}
     >
-      <div className="flex gap-4">
-        <div className="shrink-0 w-[5.5rem] sm:w-24">
+      <div className="flex gap-3">
+        <div className="shrink-0 w-[4.5rem] sm:w-20">
           <div
             className={`relative aspect-video w-full overflow-hidden rounded-md border ${
               theme === "dark" ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-slate-100"
@@ -65,10 +65,10 @@ export default function ExperienceCard({
           </div>
         </div>
 
-        <div className="min-w-0 flex-1 flex flex-col gap-2">
+        <div className="min-w-0 flex-1 flex flex-col gap-1.5">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
             <h2
-              className={`text-lg font-semibold leading-tight sm:text-xl ${
+              className={`text-base font-semibold leading-tight sm:text-lg ${
                 theme === "dark" ? "text-slate-50" : "text-slate-900"
               }`}
             >
@@ -76,7 +76,7 @@ export default function ExperienceCard({
             </h2>
             {role && (
               <span
-                className={`text-sm font-normal ${
+                className={`text-xs font-normal ${
                   theme === "dark" ? "text-slate-400" : "text-slate-600"
                 }`}
               >

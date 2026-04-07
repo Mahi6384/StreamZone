@@ -15,10 +15,12 @@ import {
   headingPage,
   subheading,
 } from "../theme/ui";
+import { useTheme } from "../context/ThemeContext";
 
 const LEVELS = ["Intern", "SDE1", "SDE2", "SDE3", "Senior", "Staff", "Other"];
 
 const ShareExperiencePage = () => {
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -34,7 +36,6 @@ const ShareExperiencePage = () => {
   const [uploading, setUploading] = useState(false);
   const user = JSON.parse(localStorage.getItem("user") || "null");
   const userId = user?.id ?? user?._id;
-  const theme = localStorage.getItem("theme") || "dark";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -85,31 +86,31 @@ const ShareExperiencePage = () => {
   };
 
   return (
-    <div className={`min-h-screen pt-28 pb-14 px-4 sm:px-6 ${pageBg(theme)}`}>
-      <div className="mx-auto max-w-2xl">
-        <div className={`rounded-xl p-8 sm:p-10 ${panel(theme)}`}>
-          <div className="mb-8 flex gap-4">
+    <div className={`min-h-screen pt-[4.75rem] pb-10 px-3 sm:px-5 ${pageBg(theme)}`}>
+      <div className="mx-auto max-w-xl">
+        <div className={`rounded-lg p-5 sm:p-6 ${panel(theme)}`}>
+          <div className="mb-5 flex gap-3">
             <div
-              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border ${
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${
                 theme === "dark"
                   ? "border-blue-500/30 bg-blue-950/40 text-blue-400"
                   : "border-blue-200 bg-blue-50 text-blue-700"
               }`}
             >
-              <HiDocumentAdd className="h-6 w-6" />
+              <HiDocumentAdd className="h-5 w-5" />
             </div>
             <div>
-              <h1 className={`text-2xl font-semibold tracking-tight ${headingPage(theme)}`}>
+              <h1 className={`text-xl font-semibold tracking-tight ${headingPage(theme)}`}>
                 Share experience
               </h1>
-              <p className={`mt-1 max-w-lg ${subheading}`}>
+              <p className={`mt-0.5 max-w-lg text-sm ${subheading}`}>
                 Add structured notes plus a short recording so others can learn from your interview
                 loop.
               </p>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className={labelCls} htmlFor="se-title">
                 Title
@@ -125,7 +126,7 @@ const ShareExperiencePage = () => {
               />
             </div>
 
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className={labelCls} htmlFor="se-company">
                   Company
@@ -155,7 +156,7 @@ const ShareExperiencePage = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className={labelCls} htmlFor="se-level">
                   Experience level
@@ -218,7 +219,7 @@ const ShareExperiencePage = () => {
               />
             </div>
 
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className={labelCls} htmlFor="se-outcome">
                   Outcome (optional)

@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { EXPERIENCES_API } from "../config/api";
 import { Button } from "./ui/Button";
 import { pageBg, panel, panelMuted, headingPage, inputCls, primaryButton } from "../theme/ui";
+import { useTheme } from "../context/ThemeContext";
 
 function idIncluded(list, uid) {
   if (!uid || !list?.length) return false;
@@ -15,7 +16,7 @@ function idIncluded(list, uid) {
 
 function Section({ theme, title, children, className = "" }) {
   return (
-    <section className={`rounded-xl p-5 ${panel(theme)} ${className}`.trim()}>
+    <section className={`rounded-lg p-4 ${panel(theme)} ${className}`.trim()}>
       <h3 className={`text-sm font-semibold uppercase tracking-wide text-slate-500 mb-3`}>
         {title}
       </h3>
@@ -25,6 +26,7 @@ function Section({ theme, title, children, className = "" }) {
 }
 
 const ExperienceDetail = () => {
+  const { theme } = useTheme();
   const { id } = useParams();
   const navigate = useNavigate();
   const [experience, setExperience] = useState(null);
@@ -37,7 +39,6 @@ const ExperienceDetail = () => {
   const [newMessage, setNewMessage] = useState("");
   const user = JSON.parse(localStorage.getItem("user") || "null");
   const userId = user?.id ?? user?._id;
-  const theme = localStorage.getItem("theme") || "dark";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -145,8 +146,8 @@ const ExperienceDetail = () => {
   const role = experience.role?.trim() || "";
 
   return (
-    <div className={`min-h-screen pt-24 pb-14 px-4 sm:px-8 ${pageBg(theme)}`}>
-      <div className="max-w-6xl mx-auto">
+    <div className={`min-h-screen pt-[4.25rem] pb-10 px-3 sm:px-6 ${pageBg(theme)}`}>
+      <div className="max-w-5xl mx-auto">
         <button
           type="button"
           onClick={() => navigate("/")}
@@ -155,10 +156,10 @@ const ExperienceDetail = () => {
           ← Experience feed
         </button>
 
-        <header className={`mb-8 rounded-xl p-6 sm:p-8 ${panel(theme)}`}>
+        <header className={`mb-5 rounded-lg p-4 sm:p-5 ${panel(theme)}`}>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0 flex-1">
-              <p className={`text-2xl font-semibold tracking-tight sm:text-3xl ${headingPage(theme)}`}>
+              <p className={`text-xl font-semibold tracking-tight sm:text-2xl ${headingPage(theme)}`}>
                 {company}
               </p>
               {role && (
@@ -191,7 +192,7 @@ const ExperienceDetail = () => {
                 </span>
               </div>
               <h1
-                className={`mt-4 text-xl font-semibold leading-snug sm:text-2xl ${headingPage(theme)}`}
+                className={`mt-3 text-lg font-semibold leading-snug sm:text-xl ${headingPage(theme)}`}
               >
                 {experience.title}
               </h1>
@@ -244,7 +245,7 @@ const ExperienceDetail = () => {
           </div>
         </header>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2 lg:order-1">
             <Section theme={theme} title="Summary">
               <p
@@ -316,7 +317,7 @@ const ExperienceDetail = () => {
               </p>
             </Section>
 
-            <section className={`rounded-xl p-5 ${panel(theme)}`}>
+            <section className={`rounded-lg p-4 ${panel(theme)}`}>
               <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-1">
                 Discussion
                 <span className="ml-2 font-normal normal-case text-slate-500">({discussion.length})</span>
@@ -381,7 +382,7 @@ const ExperienceDetail = () => {
           </div>
 
           <aside className="space-y-6 lg:order-2">
-            <div className={`rounded-xl p-4 ${panelMuted(theme)} lg:sticky lg:top-24`}>
+            <div className={`rounded-lg p-3 ${panelMuted(theme)} lg:sticky lg:top-[4.25rem]`}>
               <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">
                 Experience recording
               </h3>
@@ -402,7 +403,7 @@ const ExperienceDetail = () => {
               </div>
             </div>
 
-            <div className={`rounded-xl p-4 ${panel(theme)}`}>
+            <div className={`rounded-lg p-3 ${panel(theme)}`}>
               <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-4">
                 Related experiences
               </h3>

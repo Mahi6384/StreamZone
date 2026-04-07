@@ -5,15 +5,16 @@ import { EXPERIENCES_API } from "../config/api";
 import ExperienceCard from "../components/ExperienceCard";
 import { Button } from "../components/ui/Button";
 import { pageBg, panelEmpty, headingPage, subheading, linkButton } from "../theme/ui";
+import { useTheme } from "../context/ThemeContext";
 
 const MyExperiences = () => {
+  const { theme } = useTheme();
   const [experiences, setExperiences] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "null");
   const userId = user?.id ?? user?._id;
-  const theme = localStorage.getItem("theme") || "dark";
 
   useEffect(() => {
     if (!user || !userId) {
@@ -46,13 +47,13 @@ const MyExperiences = () => {
   }
 
   return (
-    <div className={`min-h-screen pt-24 pb-14 px-4 sm:px-8 ${pageBg(theme)}`}>
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-10 text-center sm:text-left">
-          <h1 className={`text-2xl font-semibold sm:text-3xl ${headingPage(theme)}`}>
+    <div className={`min-h-screen pt-[4.25rem] pb-10 px-3 sm:px-6 ${pageBg(theme)}`}>
+      <div className="max-w-5xl mx-auto">
+        <div className="mb-6 text-center sm:text-left">
+          <h1 className={`text-xl font-semibold sm:text-2xl ${headingPage(theme)}`}>
             My experiences
           </h1>
-          <p className={`mt-2 max-w-xl ${subheading}`}>
+          <p className={`mt-1.5 max-w-xl text-sm ${subheading}`}>
             Everything you have shared — public entries appear on the feed; private ones stay here for
             your own tracking.
           </p>
@@ -71,8 +72,8 @@ const MyExperiences = () => {
         )}
 
         {experiences.length === 0 ? (
-          <div className={`mx-auto max-w-lg rounded-xl p-10 text-center ${panelEmpty(theme)}`}>
-            <p className={`text-lg font-medium ${headingPage(theme)}`}>No experiences yet</p>
+          <div className={`mx-auto max-w-lg rounded-lg p-6 text-center ${panelEmpty(theme)}`}>
+            <p className={`text-base font-medium ${headingPage(theme)}`}>No experiences yet</p>
             <p className="mt-3 text-sm leading-relaxed text-slate-500">
               When you document a loop — company, questions, tips — it shows up here. Start with one
               experience to build your personal archive.
@@ -93,7 +94,7 @@ const MyExperiences = () => {
             </p>
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
             {experiences.map((exp) => (
               <ExperienceCard
                 key={exp._id}
