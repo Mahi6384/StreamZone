@@ -11,13 +11,14 @@ import {
   subheading,
   primaryButton,
 } from "../theme/ui";
+import { useTheme } from "../context/ThemeContext";
 
 const AuthForm = ({ title, buttonText, showName, onClose }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const theme = localStorage.getItem("theme") || "dark";
+  const { theme } = useTheme();
 
   const handleSubmit = async (e) => {
     e.preventDefault();

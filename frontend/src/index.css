@@ -3,6 +3,19 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    font-size: 16px;
+  }
+  @media (min-width: 1024px) {
+    html {
+      font-size: 15px;
+    }
+  }
+  @media (min-width: 1280px) {
+    html {
+      font-size: 14px;
+    }
+  }
   body {
     @apply transition-colors duration-200 antialiased;
     font-family: "Inter", system-ui, sans-serif;
@@ -12,6 +25,10 @@
   }
   body.light-mode {
     @apply bg-slate-50 text-slate-900;
+  }
+  /* DaisyUI / browser defaults can tint checkboxes red; force blue accent */
+  input[type="checkbox"] {
+    accent-color: rgb(37 99 235);
   }
 }
 

@@ -15,6 +15,7 @@ import {
   subheading,
   linkButton,
 } from "../theme/ui";
+import { useTheme } from "../context/ThemeContext";
 
 const EXPERIENCE_LEVELS = ["Intern", "SDE1", "SDE2", "SDE3", "Senior", "Staff", "Other"];
 
@@ -64,11 +65,11 @@ function buildFilterQuery(params) {
 function FilterSection({ theme, title, children }) {
   return (
     <div
-      className={`border-t pt-4 first:border-t-0 first:pt-0 ${
+      className={`border-t pt-3 first:border-t-0 first:pt-0 ${
         theme === "dark" ? "border-slate-700" : "border-slate-200"
       }`}
     >
-      <h3 className={`${labelCls} mb-3`}>{title}</h3>
+      <h3 className={`${labelCls} mb-2 !text-[10px]`}>{title}</h3>
       {children}
     </div>
   );
@@ -80,7 +81,7 @@ const ExperienceFeed = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const theme = localStorage.getItem("theme") || "dark";
+  const { theme } = useTheme();
 
   const searchParams = useMemo(
     () => new URLSearchParams(location.search),
@@ -167,35 +168,50 @@ const ExperienceFeed = () => {
     draftCompanies.length > 0 || draftRoles.length > 0 || draftLevels.length > 0;
 
   const checkboxClass =
-    "h-4 w-4 shrink-0 rounded border-slate-500 text-blue-600 focus:ring-blue-500/40";
+    "h-3.5 w-3.5 shrink-0 rounded border-slate-500 accent-blue-600 focus:ring-2 focus:ring-blue-500/30";
 
   const sidebar = (
     <aside
-      className={`w-full shrink-0 lg:w-72 xl:w-80 lg:sticky lg:top-24 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto ${panel(
+      className={`w-full shrink-0 lg:w-60 xl:w-64 lg:sticky lg:top-[4.25rem] lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto ${panel(
         theme
-      )} rounded-xl p-4 sm:p-5`}
+      )} rounded-lg p-3 sm:p-4 text-[13px]`}
     >
-      <div className="mb-4 flex items-start justify-between gap-2">
+      <div className="mb-3 flex items-start justify-between gap-2">
         <div>
-          <h2 className={`text-sm font-semibold ${headingPage(theme)}`}>Filters</h2>
-          <p className="mt-1 text-xs leading-snug text-slate-500">
-            Select one or more companies, roles, and levels. Add custom names below the lists.
+          <h2 className={`text-xs font-semibold uppercase tracking-wide ${headingPage(theme)}`}>
+            Filters
+          </h2>
+          <p className="mt-1 text-[11px] leading-snug text-slate-500">
+            Select companies, roles, and levels. Add custom names below the lists.
           </p>
         </div>
         {hasDraftSelection && (
-          <button type="button" onClick={clearFilters} className={`${linkButton} text-xs`}>
+          <button type="button" onClick={clearFilters} className={`${linkButton} text-[11px]`}>
             Clear all
           </button>
         )}
       </div>
 
       <form onSubmit={applyFilters} className="flex flex-col gap-0">
+        <div
+          className={`mb-3 flex flex-col gap-2 border-b pb-3 ${
+            theme === "dark" ? "border-slate-700" : "border-slate-200"
+          }`}
+        >
+          <Button theme={theme} variant="primary" type="submit" className="w-full !py-2 !text-xs">
+            Apply filters
+          </Button>
+          <Button theme={theme} variant="secondary" type="button" onClick={clearFilters} className="w-full !py-2 !text-xs">
+            Reset
+          </Button>
+        </div>
+
         <FilterSection theme={theme} title="Companies">
-          <div className="mb-3 flex max-h-40 flex-col gap-2 overflow-y-auto pr-1">
+          <div className="mb-2 flex max-h-32 flex-col gap-1.5 overflow-y-auto pr-1">
             {PRESET_COMPANIES.map((name) => (
               <label
                 key={name}
-                className={`flex cursor-pointer items-center gap-2 text-sm ${
+                className={`flex cursor-pointer items-center gap-2 text-[13px] ${
                   theme === "dark" ? "text-slate-300" : "text-slate-700"
                 }`}
               >
@@ -251,11 +267,11 @@ const ExperienceFeed = () => {
         </FilterSection>
 
         <FilterSection theme={theme} title="Roles">
-          <div className="mb-3 flex max-h-40 flex-col gap-2 overflow-y-auto pr-1">
+          <div className="mb-2 flex max-h-32 flex-col gap-1.5 overflow-y-auto pr-1">
             {PRESET_ROLES.map((name) => (
               <label
                 key={name}
-                className={`flex cursor-pointer items-center gap-2 text-sm ${
+                className={`flex cursor-pointer items-center gap-2 text-[13px] ${
                   theme === "dark" ? "text-slate-300" : "text-slate-700"
                 }`}
               >
@@ -311,11 +327,11 @@ const ExperienceFeed = () => {
         </FilterSection>
 
         <FilterSection theme={theme} title="Experience level">
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             {EXPERIENCE_LEVELS.map((lvl) => (
               <label
                 key={lvl}
-                className={`flex cursor-pointer items-center gap-2 text-sm ${
+                className={`flex cursor-pointer items-center gap-2 text-[13px] ${
                   theme === "dark" ? "text-slate-300" : "text-slate-700"
                 }`}
               >
@@ -330,25 +346,16 @@ const ExperienceFeed = () => {
             ))}
           </div>
         </FilterSection>
-
-        <div className="mt-5 flex flex-col gap-2 border-t pt-4 sm:flex-row sm:gap-2">
-          <Button theme={theme} variant="primary" type="submit" className="flex-1">
-            Apply filters
-          </Button>
-          <Button theme={theme} variant="secondary" type="button" onClick={clearFilters} className="flex-1">
-            Reset
-          </Button>
-        </div>
       </form>
     </aside>
   );
 
   const mainHeader = (
-    <header className="mb-8">
-      <h1 className={`text-2xl font-semibold tracking-tight sm:text-3xl ${headingPage(theme)}`}>
+    <header className="mb-5">
+      <h1 className={`text-xl font-semibold tracking-tight sm:text-2xl ${headingPage(theme)}`}>
         Experience feed
       </h1>
-      <p className={`mt-2 max-w-2xl ${subheading}`}>
+      <p className={`mt-1.5 max-w-xl text-sm ${subheading}`}>
         Structured interview write-ups from candidates. Use the filters on the left to narrow by
         company, role, and level.
       </p>
@@ -357,8 +364,8 @@ const ExperienceFeed = () => {
 
   if (loading && experiences.length === 0 && !error) {
     return (
-      <div className={`min-h-screen pt-24 pb-14 ${pageBg(theme)}`}>
-        <div className="mx-auto flex max-w-[1600px] flex-col gap-6 px-4 lg:flex-row lg:px-6">
+      <div className={`min-h-screen pt-[4.25rem] pb-10 ${pageBg(theme)}`}>
+        <div className="mx-auto flex max-w-5xl flex-col gap-4 px-3 sm:px-4 lg:flex-row xl:max-w-6xl lg:px-5">
           {sidebar}
           <div className="flex min-h-[50vh] flex-1 flex-col items-center justify-center gap-4">
             <span className="loading loading-spinner loading-lg text-blue-500" />
@@ -371,8 +378,8 @@ const ExperienceFeed = () => {
 
   if (error) {
     return (
-      <div className={`min-h-screen pt-24 pb-14 px-4 ${pageBg(theme)}`}>
-        <div className="mx-auto flex max-w-[1600px] flex-col gap-6 lg:flex-row lg:px-2">
+      <div className={`min-h-screen pt-[4.25rem] pb-10 px-3 sm:px-4 ${pageBg(theme)}`}>
+        <div className="mx-auto flex max-w-5xl flex-col gap-4 lg:flex-row xl:max-w-6xl lg:px-2">
           {sidebar}
           <div className="flex flex-1 flex-col items-center justify-center py-20 text-center">
             <p
@@ -392,16 +399,16 @@ const ExperienceFeed = () => {
   }
 
   return (
-    <div className={`min-h-screen pt-24 pb-14 ${pageBg(theme)}`}>
-      <div className="mx-auto flex max-w-[1600px] flex-col gap-6 px-4 lg:flex-row lg:items-start lg:gap-8 lg:px-6">
+    <div className={`min-h-screen pt-[4.25rem] pb-10 ${pageBg(theme)}`}>
+      <div className="mx-auto flex max-w-5xl flex-col gap-4 px-3 sm:px-4 lg:flex-row lg:items-start lg:gap-5 xl:max-w-6xl lg:px-5">
         {sidebar}
 
         <main className="min-w-0 flex-1">
           {mainHeader}
 
           {!experiences || experiences.length === 0 ? (
-            <div className={`rounded-xl p-10 text-center ${panelEmpty(theme)}`}>
-              <p className={`text-lg font-medium ${headingPage(theme)}`}>
+            <div className={`rounded-lg p-6 text-center ${panelEmpty(theme)}`}>
+              <p className={`text-base font-medium ${headingPage(theme)}`}>
                 {hasActiveUrlFilters ? "No experiences match these filters." : "The feed is empty for now."}
               </p>
               <p className="mt-3 mx-auto max-w-md text-sm leading-relaxed text-slate-500">
@@ -414,7 +421,7 @@ const ExperienceFeed = () => {
               </button>
             </div>
           ) : (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
               {loading && experiences.length > 0 && (
                 <p className="text-center text-sm text-slate-500">Updating results…</p>
               )}
