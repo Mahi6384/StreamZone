@@ -5,7 +5,7 @@ const Footer = () => {
     <footer className=" position-fixed footer flex justify-between items-center p-4 bg-neutral text-neutral-content mt-10">
       {/* Left: Socials */}
       <div className="items-center grid-flow-col">
-        <p className="font-semibold text-lg">© 2025 StreamZone</p>
+        <p className="font-semibold text-lg">© 2025 InsightHire</p>
         <div className="flex gap-4 ml-6">
           <a
             href="https://github.com/yourusername"
