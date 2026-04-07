@@ -25,6 +25,32 @@ function Section({ theme, title, children, className = "" }) {
   );
 }
 
+function ImageStrip({ theme, urls }) {
+  if (!urls?.length) return null;
+  return (
+    <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+      {urls.map((src, idx) => (
+        <a
+          key={`${src}-${idx}`}
+          href={src}
+          target="_blank"
+          rel="noreferrer"
+          className={`group overflow-hidden rounded-lg border ${
+            theme === "dark" ? "border-slate-700 bg-slate-950" : "border-slate-200 bg-white"
+          }`}
+        >
+          <img
+            src={src}
+            alt=""
+            loading="lazy"
+            className="h-28 w-full object-cover transition-transform group-hover:scale-[1.02]"
+          />
+        </a>
+      ))}
+    </div>
+  );
+}
+
 const ExperienceDetail = () => {
   const { theme } = useTheme();
   const { id } = useParams();
@@ -288,6 +314,22 @@ const ExperienceDetail = () => {
                   </dd>
                 </div>
               </dl>
+
+              {experience.detailsNotes?.trim() ? (
+                <div
+                  className={`mt-4 rounded-lg border p-3 text-sm ${
+                    theme === "dark"
+                      ? "border-slate-700 bg-slate-900/40 text-slate-300"
+                      : "border-slate-200 bg-slate-50 text-slate-700"
+                  }`}
+                >
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">
+                    Notes
+                  </p>
+                  <p className="whitespace-pre-wrap leading-relaxed">{experience.detailsNotes}</p>
+                  <ImageStrip theme={theme} urls={experience.detailsNotesImages} />
+                </div>
+              ) : null}
             </Section>
 
             <Section theme={theme} title="Questions discussed">
@@ -305,6 +347,32 @@ const ExperienceDetail = () => {
               ) : (
                 <p className="text-sm text-slate-500">No questions listed.</p>
               )}
+
+              {experience.questionsNotes?.trim() ? (
+                <div
+                  className={`mt-4 rounded-lg border p-3 text-sm ${
+                    theme === "dark"
+                      ? "border-slate-700 bg-slate-900/40 text-slate-300"
+                      : "border-slate-200 bg-slate-50 text-slate-700"
+                  }`}
+                >
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">
+                    Notes
+                  </p>
+                  <p className="whitespace-pre-wrap leading-relaxed">{experience.questionsNotes}</p>
+                  <ImageStrip theme={theme} urls={experience.questionsNotesImages} />
+                </div>
+              ) : null}
+            </Section>
+
+            <Section theme={theme} title="How to prepare">
+              <p
+                className={`whitespace-pre-wrap text-sm leading-relaxed ${
+                  theme === "dark" ? "text-slate-300" : "text-slate-700"
+                }`}
+              >
+                {experience.howToPrepare?.trim() || "No preparation notes added."}
+              </p>
             </Section>
 
             <Section theme={theme} title="Tips">
@@ -315,6 +383,21 @@ const ExperienceDetail = () => {
               >
                 {experience.tips || "No tips added."}
               </p>
+
+              {experience.tipsNotes?.trim() ? (
+                <div
+                  className={`mt-4 rounded-lg border p-3 text-sm ${
+                    theme === "dark"
+                      ? "border-slate-700 bg-slate-900/40 text-slate-300"
+                      : "border-slate-200 bg-slate-50 text-slate-700"
+                  }`}
+                >
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">
+                    Notes
+                  </p>
+                  <p className="whitespace-pre-wrap leading-relaxed">{experience.tipsNotes}</p>
+                </div>
+              ) : null}
             </Section>
 
             <section className={`rounded-lg p-4 ${panel(theme)}`}>
