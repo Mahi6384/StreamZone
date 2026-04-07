@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import AuthForm from "./AuthForm";
 import { IoClose } from "react-icons/io5";
 import { panel } from "../theme/ui";
@@ -9,8 +10,10 @@ const AuthModal = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+  // Portal: nav uses backdrop-blur, which makes fixed descendants position vs the nav
+  // box instead of the viewport — portal escapes that so the overlay covers the page.
+  return createPortal(
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm" onClick={onClose} aria-hidden />
 
       <div
@@ -72,7 +75,8 @@ const AuthModal = ({ isOpen, onClose }) => {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
