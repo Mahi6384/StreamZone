@@ -4,58 +4,42 @@
 
 @layer base {
   body {
-    @apply transition-colors duration-300;
-    font-family: 'Inter', sans-serif;
+    @apply transition-colors duration-200 antialiased;
+    font-family: "Inter", system-ui, sans-serif;
   }
   body.dark-mode {
-    @apply bg-[#0f0f0f] text-[#f1f1f1];
+    @apply bg-slate-950 text-slate-100;
   }
   body.light-mode {
-    @apply bg-white text-black;
+    @apply bg-slate-50 text-slate-900;
   }
 }
 
-/* Custom Scrollbar for a Premium Look */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0f0f0f;
+  @apply bg-slate-900;
+}
+
+body.light-mode ::-webkit-scrollbar-track {
+  @apply bg-slate-200;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2a2a2a;
-  border-radius: 4px;
+  @apply rounded bg-slate-600;
+}
+
+body.light-mode ::-webkit-scrollbar-thumb {
+  @apply bg-slate-400;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f3f;
+  @apply bg-slate-500;
 }
 
-@keyframes sparkle {
-  0%, 100% {
-    text-shadow: 0 0 4px rgba(255, 255, 255, 0.4), 0 0 10px rgba(255, 25, 25, 0.2);
-  }
-  50% {
-    text-shadow: 0 0 8px rgba(255, 25, 25, 0.4), 0 0 15px rgba(255, 255, 255, 0.2);
-  }
-}
-
-.sparkly-text {
-  animation: sparkle 3s ease-in-out infinite;
-  background: linear-gradient(to right, #ff4d4d, #f9cb28, #ff4d4d);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  transition: 0.5s;
-}
-
-.sparkly-text:hover {
-  background-position: right center;
-}
-
-/* Glassmorphism utility */
-.glass {
-  @apply bg-white/5 backdrop-blur-xl border border-white/10;
+body.light-mode ::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-500;
 }
