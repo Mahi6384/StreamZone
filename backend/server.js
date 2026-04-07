@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const connectDB = require("./database");
-const videoRoutes = require("./routes/videoRoutes");
+const experienceRoutes = require("./routes/experienceRoutes");
 const userRoutes = require("./routes/userRoutes");
 const path = require("path");
 const cors = require("cors");
@@ -15,7 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 //urlencoded means it is saying express read form data from the frontend or postman
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-app.use("/api/videos", videoRoutes);
+app.use("/api/experiences", experienceRoutes);
 app.use("/api/users", userRoutes);
 app.get("/", (req, res) => {
   res.send(`<h1>Hello Backend is working</h1>`);
