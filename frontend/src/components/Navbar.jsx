@@ -55,7 +55,7 @@ const Navbar = () => {
           className="shrink-0 text-left"
         >
           <span className="block text-base font-semibold tracking-tight text-blue-500 sm:text-lg">
-            InterviewShare
+            InsightHire
           </span>
           <span className="hidden text-[9px] font-medium uppercase tracking-wider text-slate-500 sm:block">
             Interview knowledge
@@ -65,29 +65,44 @@ const Navbar = () => {
         <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">
           <button
             type="button"
+            role="switch"
+            aria-checked={theme === "dark"}
             onClick={toggleTheme}
-            className={ghostButton(theme)}
-            title={theme === "dark" ? "Light mode" : "Dark mode"}
+            className={`relative inline-flex h-8 w-[3.25rem] items-center rounded-full border transition-colors ${
+              theme === "dark"
+                ? "border-slate-700 bg-slate-900 hover:bg-slate-800"
+                : "border-slate-200 bg-white hover:bg-slate-50"
+            }`}
+            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
           >
-            {theme === "dark" ? (
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                />
-              </svg>
-            ) : (
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-                />
-              </svg>
-            )}
+            <span className="sr-only">Toggle theme</span>
+            <span
+              className={`absolute left-1 top-1 inline-flex h-6 w-6 items-center justify-center rounded-full shadow-sm transition-transform ${
+                theme === "dark"
+                  ? "translate-x-5 bg-slate-700 text-slate-200"
+                  : "translate-x-0 bg-slate-100 text-slate-700"
+              }`}
+            >
+              {theme === "dark" ? (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                  />
+                </svg>
+              ) : (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                  />
+                </svg>
+              )}
+            </span>
           </button>
 
           <button
