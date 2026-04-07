@@ -12,6 +12,9 @@ import {
   primaryButton,
 } from "../theme/ui";
 import { useTheme } from "../context/ThemeContext";
+import { USERS_API } from "../config/api";
+
+const getGoogleClientId = () => process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
 const AuthForm = ({ title, buttonText, showName, onClose }) => {
   const [name, setName] = useState("");
@@ -26,7 +29,7 @@ const AuthForm = ({ title, buttonText, showName, onClose }) => {
     const payload = showName ? { name, email, password } : { email, password };
 
     try {
-      const res = await axios.post(`http://localhost:5000/api/users/${endpoint}`, payload);
+      const res = await axios.post(`${USERS_API}/${endpoint}`, payload);
       localStorage.setItem("user", JSON.stringify(res.data.user));
       toast.success(`${showName ? "Welcome to InsightHire." : "Signed in successfully."}`);
       if (onClose) onClose();
@@ -35,6 +38,42 @@ const AuthForm = ({ title, buttonText, showName, onClose }) => {
       const errorMessage = error.response?.data?.message || "Authentication failed";
       toast.error(errorMessage);
     }
+  };
+
+  const handleGoogle = async () => {
+    const clientId = getGoogleClientId();
+    if (!clientId) {
+      toast.error("Google sign-in is not configured: missing REACT_APP_GOOGLE_CLIENT_ID");
+      return;
+    }
+    if (!window.google?.accounts?.id) {
+      toast.error("Google sign-in failed to load. Please refresh and try again.");
+      return;
+    }
+
+    window.google.accounts.id.initialize({
+      client_id: clientId,
+      callback: async (response) => {
+        try {
+          const res = await axios.post(`${USERS_API}/google`, {
+            credential: response.credential,
+          });
+          localStorage.setItem("user", JSON.stringify(res.data.user));
+          toast.success("Signed in with Google.");
+          if (onClose) onClose();
+          navigate("/");
+        } catch (error) {
+          const errorMessage = error.response?.data?.message || "Google authentication failed";
+          toast.error(errorMessage);
+        }
+      },
+    });
+
+    window.google.accounts.id.prompt((notification) => {
+      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+        toast.error("Google sign-in was blocked or closed. Please try again.");
+      }
+    });
   };
 
   const inModal = Boolean(onClose);
@@ -50,7 +89,7 @@ const AuthForm = ({ title, buttonText, showName, onClose }) => {
         <div className="w-full max-w-sm mx-auto space-y-4">
           <button
             type="button"
-            onClick={() => toast.success("Google sign-in is not configured yet.")}
+            onClick={handleGoogle}
             className={`flex w-full items-center justify-center gap-3 rounded-lg border py-3 text-sm font-medium transition-colors ${
               theme === "dark"
                 ? "border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700/90"
