@@ -1,11 +1,10 @@
 import React from "react";
-import Allvideos from "../components/Allvideos";
-// import Footer from "../components/Footer";
+import ExperienceFeed from "../components/ExperienceFeed";
+
 const Home = () => {
   return (
     <div>
-      <Allvideos />
-      {/* <Footer /> */}
+      <ExperienceFeed />
     </div>
   );
 };
