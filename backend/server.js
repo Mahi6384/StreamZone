@@ -20,6 +20,7 @@ app.use("/api/users", userRoutes);
 app.get("/", (req, res) => {
   res.send(`<h1>Hello Backend is working</h1>`);
 });
+
 connectDB();
 app.listen(PORT, () => {
   console.log(`server is running on port ${PORT}`);

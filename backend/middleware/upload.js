@@ -1,29 +1,21 @@
 const multer = require("multer");
-const cloudinary = require("cloudinary").v2;
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const fs = require("fs");
+const path = require("path");
 require("dotenv").config();
 
-// Cloudinary Configuration
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+const TMP_DIR = path.join(__dirname, "..", "uploads", "tmp");
+if (!fs.existsSync(TMP_DIR)) {
+  fs.mkdirSync(TMP_DIR, { recursive: true });
+}
 
-// Configure Cloudinary Storage for Multer
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: (req, file) => {
-    const isVideo = file.mimetype?.startsWith("video/");
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    return {
-      folder: "insighthire/experiences",
-      resource_type: isVideo ? "video" : "image",
-      allowed_formats: isVideo
-        ? ["mp4", "mkv", "avi", "mov"]
-        : ["jpg", "jpeg", "png", "webp", "gif"],
-      public_id: isVideo ? `video-${uniqueSuffix}` : `image-${uniqueSuffix}`,
-    };
+// Store uploads on disk temporarily (Cloudinary upload happens in controller)
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, TMP_DIR),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname || "");
+    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    const base = file.mimetype?.startsWith("video/") ? "video" : "image";
+    cb(null, `${base}-${unique}${ext}`);
   },
 });
 
@@ -39,7 +31,7 @@ const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 100 * 1024 * 1024, // 100MB limit
+    fileSize: 75 * 1024 * 1024, // 75MB limit
   },
 });
 
