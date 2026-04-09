@@ -5,7 +5,15 @@ import { HiThumbUp, HiThumbDown } from "react-icons/hi";
 import toast from "react-hot-toast";
 import { EXPERIENCES_API } from "../config/api";
 import { Button } from "./ui/Button";
-import { pageBg, panel, panelMuted, headingPage, inputCls, primaryButton } from "../theme/ui";
+import {
+  pageBg,
+  panel,
+  panelMuted,
+  headingPage,
+  inputCls,
+  primaryButton,
+  accentBadge,
+} from "../theme/ui";
 import { useTheme } from "../context/ThemeContext";
 
 function idIncluded(list, uid) {
@@ -16,12 +24,41 @@ function idIncluded(list, uid) {
 
 function Section({ theme, title, children, className = "" }) {
   return (
-    <section className={`rounded-lg p-4 ${panel(theme)} ${className}`.trim()}>
+    <section className={`rounded-2xl p-4 sm:p-5 ${panel(theme)} ${className}`.trim()}>
       <h3 className={`text-sm font-semibold uppercase tracking-wide text-slate-500 mb-3`}>
         {title}
       </h3>
       {children}
     </section>
+  );
+}
+
+function roundAnchorId(idx) {
+  return `experience-round-${idx}`;
+}
+
+function RoundsJumpList({ theme, rounds, className = "" }) {
+  if (!rounds?.length) return null;
+  const linkCls =
+    theme === "dark"
+      ? "text-emerald-400/95 hover:text-emerald-300 underline-offset-2 hover:underline"
+      : "text-emerald-700 hover:text-emerald-800 underline-offset-2 hover:underline";
+  return (
+    <nav className={className} aria-label="Jump to interview round">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
+        Jump to round
+      </p>
+      <ul className="flex flex-col gap-1.5 text-[13px]">
+        {rounds.map((round, idx) => (
+          <li key={idx}>
+            <a href={`#${roundAnchorId(idx)}`} className={`block font-medium leading-snug ${linkCls}`}>
+              Round {String(idx + 1).padStart(2, "0")}
+              {round.name?.trim() ? ` · ${round.name.trim()}` : ""}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
   );
 }
 
@@ -35,7 +72,7 @@ function ImageStrip({ theme, urls }) {
           href={src}
           target="_blank"
           rel="noreferrer"
-          className={`group overflow-hidden rounded-lg border ${
+          className={`group overflow-hidden rounded-xl border ${
             theme === "dark" ? "border-slate-700 bg-slate-950" : "border-slate-200 bg-white"
           }`}
         >
@@ -135,8 +172,8 @@ const ExperienceDetail = () => {
 
   if (loading) {
     return (
-      <div className={`flex items-center justify-center min-h-screen ${pageBg(theme)}`}>
-        <span className="loading loading-spinner loading-lg text-blue-500" />
+      <div className={`flex min-h-screen items-center justify-center pt-20 ${pageBg(theme)}`}>
+        <span className="loading loading-spinner loading-lg text-emerald-500" />
       </div>
     );
   }
@@ -144,7 +181,7 @@ const ExperienceDetail = () => {
   if (error) {
     return (
       <div
-        className={`flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center ${pageBg(
+        className={`flex min-h-screen flex-col items-center justify-center gap-4 px-4 pt-20 text-center ${pageBg(
           theme
         )}`}
       >
@@ -172,17 +209,17 @@ const ExperienceDetail = () => {
   const role = experience.role?.trim() || "";
 
   return (
-    <div className={`min-h-screen pt-[4.25rem] pb-10 px-3 sm:px-6 ${pageBg(theme)}`}>
-      <div className="max-w-5xl mx-auto">
+    <div className={`min-h-screen pt-20 pb-14 px-4 sm:px-6 ${pageBg(theme)}`}>
+      <div className="mx-auto max-w-7xl">
         <button
           type="button"
           onClick={() => navigate("/")}
-          className={`mb-6 text-sm font-medium text-blue-500 hover:text-blue-400`}
+          className={`mb-6 text-sm font-medium text-emerald-500 hover:text-emerald-400`}
         >
           ← Experience feed
         </button>
 
-        <header className={`mb-5 rounded-lg p-4 sm:p-5 ${panel(theme)}`}>
+        <header className={`mb-6 rounded-2xl p-4 sm:p-5 ${panel(theme)}`}>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0 flex-1">
               <p className={`text-xl font-semibold tracking-tight sm:text-2xl ${headingPage(theme)}`}>
@@ -195,15 +232,7 @@ const ExperienceDetail = () => {
               )}
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 {experience.experienceLevel && (
-                  <span
-                    className={`inline-flex rounded-md border px-2 py-0.5 text-xs font-medium ${
-                      theme === "dark"
-                        ? "border-blue-500/30 bg-blue-950/50 text-blue-300"
-                        : "border-blue-200 bg-blue-50 text-blue-800"
-                    }`}
-                  >
-                    {experience.experienceLevel}
-                  </span>
+                  <span className={accentBadge(theme)}>{experience.experienceLevel}</span>
                 )}
                 <span
                   className={`text-xs font-medium ${
@@ -230,7 +259,7 @@ const ExperienceDetail = () => {
 
             <div className="flex flex-shrink-0 flex-col gap-2 sm:flex-row lg:flex-col">
               <div
-                className={`flex overflow-hidden rounded-lg border sm:inline-flex ${
+                className={`flex overflow-hidden rounded-xl border sm:inline-flex ${
                   theme === "dark" ? "border-slate-600/60" : "border-slate-200"
                 }`}
               >
@@ -241,7 +270,7 @@ const ExperienceDetail = () => {
                     theme === "dark" ? "border-slate-600/60" : "border-slate-200"
                   } ${
                     markedHelpful
-                      ? "bg-blue-600/20 text-blue-400"
+                      ? "bg-emerald-600/20 text-emerald-400"
                       : theme === "dark"
                         ? "text-slate-300 hover:bg-slate-800"
                         : "text-slate-700 hover:bg-slate-100"
@@ -317,7 +346,7 @@ const ExperienceDetail = () => {
 
               {experience.detailsNotes?.trim() ? (
                 <div
-                  className={`mt-4 rounded-lg border p-3 text-sm ${
+                  className={`mt-4 rounded-xl border p-3 text-sm ${
                     theme === "dark"
                       ? "border-slate-700 bg-slate-900/40 text-slate-300"
                       : "border-slate-200 bg-slate-50 text-slate-700"
@@ -332,8 +361,110 @@ const ExperienceDetail = () => {
               ) : null}
             </Section>
 
-            <Section theme={theme} title="Questions discussed">
-              {experience.questions?.length ? (
+            <Section
+              theme={theme}
+              title={
+                experience.interviewRoundDetails?.length
+                  ? "Interview rounds"
+                  : "Questions discussed"
+              }
+            >
+              {experience.interviewRoundDetails?.length ? (
+                <>
+                  <div
+                    className={`mb-4 rounded-xl border p-3 lg:hidden ${
+                      theme === "dark"
+                        ? "border-slate-700 bg-slate-900/30"
+                        : "border-slate-200 bg-slate-50/90"
+                    }`}
+                  >
+                    <RoundsJumpList theme={theme} rounds={experience.interviewRoundDetails} />
+                  </div>
+                  <div className="space-y-5">
+                  {experience.interviewRoundDetails.map((round, idx) => {
+                    const lines = String(round.questionsText || "")
+                      .split(/\r?\n/)
+                      .map((s) => s.trim())
+                      .filter(Boolean);
+                    return (
+                      <div
+                        key={idx}
+                        id={roundAnchorId(idx)}
+                        className={`scroll-mt-28 overflow-hidden rounded-xl border text-sm ${
+                          theme === "dark"
+                            ? "border-slate-700 bg-slate-900/35"
+                            : "border-slate-200 bg-white"
+                        }`}
+                      >
+                        <div
+                          className={`flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 ${
+                            theme === "dark" ? "bg-emerald-950/35" : "bg-emerald-50/90"
+                          }`}
+                        >
+                          <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                            Round {String(idx + 1).padStart(2, "0")}
+                            {round.name ? ` · ${round.name}` : ""}
+                          </span>
+                        </div>
+                        <div className="space-y-3 p-4">
+                          {lines.length ? (
+                            <div>
+                              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                Questions asked
+                              </p>
+                              <ol className="list-decimal space-y-2 pl-4">
+                                {lines.map((q, i) => (
+                                  <li
+                                    key={i}
+                                    className={
+                                      theme === "dark" ? "text-slate-300" : "text-slate-700"
+                                    }
+                                  >
+                                    {q}
+                                  </li>
+                                ))}
+                              </ol>
+                            </div>
+                          ) : (
+                            <p className="text-slate-500">No questions listed for this round.</p>
+                          )}
+                          {round.notes?.trim() ? (
+                            <div
+                              className={`rounded-lg border p-3 text-sm ${
+                                theme === "dark"
+                                  ? "border-slate-700 bg-slate-950/50 text-slate-300"
+                                  : "border-slate-200 bg-slate-50 text-slate-700"
+                              }`}
+                            >
+                              <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                Notes &amp; strategies
+                              </p>
+                              <p className="whitespace-pre-wrap leading-relaxed">{round.notes}</p>
+                            </div>
+                          ) : null}
+                          {round.preparationTips?.trim() ? (
+                            <div
+                              className={`rounded-lg border p-3 text-sm ${
+                                theme === "dark"
+                                  ? "border-emerald-500/20 bg-emerald-950/25 text-slate-300"
+                                  : "border-emerald-200/80 bg-emerald-50/50 text-slate-700"
+                              }`}
+                            >
+                              <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                Preparation tips
+                              </p>
+                              <p className="whitespace-pre-wrap leading-relaxed">
+                                {round.preparationTips}
+                              </p>
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  </div>
+                </>
+              ) : experience.questions?.length ? (
                 <ol className="list-decimal space-y-2 pl-4 text-sm">
                   {experience.questions.map((q, i) => (
                     <li
@@ -350,7 +481,7 @@ const ExperienceDetail = () => {
 
               {experience.questionsNotes?.trim() ? (
                 <div
-                  className={`mt-4 rounded-lg border p-3 text-sm ${
+                  className={`mt-4 rounded-xl border p-3 text-sm ${
                     theme === "dark"
                       ? "border-slate-700 bg-slate-900/40 text-slate-300"
                       : "border-slate-200 bg-slate-50 text-slate-700"
@@ -365,42 +496,21 @@ const ExperienceDetail = () => {
               ) : null}
             </Section>
 
-            <Section theme={theme} title="How to prepare">
-              <p
-                className={`whitespace-pre-wrap text-sm leading-relaxed ${
-                  theme === "dark" ? "text-slate-300" : "text-slate-700"
-                }`}
-              >
-                {experience.howToPrepare?.trim() || "No preparation notes added."}
-              </p>
-            </Section>
-
             <Section theme={theme} title="Tips">
               <p
                 className={`whitespace-pre-wrap text-sm leading-relaxed ${
                   theme === "dark" ? "text-slate-300" : "text-slate-700"
                 }`}
               >
-                {experience.tips || "No tips added."}
+                {experience.tips?.trim()
+                  ? experience.tips
+                  : experience.tipsNotes?.trim()
+                    ? "See the yellow tips note in the sidebar for links and extras."
+                    : "No tips added."}
               </p>
-
-              {experience.tipsNotes?.trim() ? (
-                <div
-                  className={`mt-4 rounded-lg border p-3 text-sm ${
-                    theme === "dark"
-                      ? "border-slate-700 bg-slate-900/40 text-slate-300"
-                      : "border-slate-200 bg-slate-50 text-slate-700"
-                  }`}
-                >
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">
-                    Notes
-                  </p>
-                  <p className="whitespace-pre-wrap leading-relaxed">{experience.tipsNotes}</p>
-                </div>
-              ) : null}
             </Section>
 
-            <section className={`rounded-lg p-4 ${panel(theme)}`}>
+            <section className={`rounded-2xl p-4 sm:p-5 ${panel(theme)}`}>
               <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-1">
                 Discussion
                 <span className="ml-2 font-normal normal-case text-slate-500">({discussion.length})</span>
@@ -465,12 +575,12 @@ const ExperienceDetail = () => {
           </div>
 
           <aside className="space-y-6 lg:order-2">
-            <div className={`rounded-lg p-3 ${panelMuted(theme)} lg:sticky lg:top-[4.25rem]`}>
+            <div className={`rounded-2xl p-4 ${panelMuted(theme)}`}>
               <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">
                 Experience recording
               </h3>
               <div
-                className={`overflow-hidden rounded-lg border ${
+                className={`overflow-hidden rounded-xl border ${
                   theme === "dark" ? "border-slate-700 bg-black" : "border-slate-200 bg-slate-900"
                 }`}
               >
@@ -486,7 +596,31 @@ const ExperienceDetail = () => {
               </div>
             </div>
 
-            <div className={`rounded-lg p-3 ${panel(theme)}`}>
+            {experience.interviewRoundDetails?.length ? (
+              <div className={`hidden rounded-2xl p-4 lg:block ${panelMuted(theme)}`}>
+                <RoundsJumpList theme={theme} rounds={experience.interviewRoundDetails} />
+              </div>
+            ) : null}
+
+            {experience.tipsNotes?.trim() ? (
+              <div
+                className="relative rotate-[0.2deg] rounded-sm border-2 border-amber-300/90 bg-amber-50 px-4 py-4 shadow-md ring-1 ring-amber-200/80 dark:border-amber-700/80 dark:bg-amber-950/40 dark:ring-amber-900/50"
+                style={{
+                  boxShadow: "4px 5px 0 rgba(180, 140, 40, 0.12)",
+                }}
+              >
+                <p className="text-[10px] font-bold uppercase tracking-wider text-amber-800/90 dark:text-amber-400/90">
+                  Tips note
+                </p>
+                <p
+                  className={`mt-2 whitespace-pre-wrap text-[13px] leading-relaxed text-amber-950 dark:text-amber-100/95`}
+                >
+                  {experience.tipsNotes}
+                </p>
+              </div>
+            ) : null}
+
+            <div className={`rounded-2xl p-4 ${panel(theme)}`}>
               <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-4">
                 Related experiences
               </h3>
@@ -499,15 +633,15 @@ const ExperienceDetail = () => {
                       <button
                         type="button"
                         onClick={() => navigate(`/experience/${item._id}`)}
-                        className={`w-full rounded-lg border px-3 py-2.5 text-left text-sm transition-colors ${
+                        className={`w-full rounded-xl border px-3 py-2.5 text-left text-sm transition-colors ${
                           theme === "dark"
-                            ? "border-slate-700 hover:border-slate-600 hover:bg-slate-800/50"
-                            : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                            ? "border-slate-700 hover:border-emerald-500/30 hover:bg-slate-800/50"
+                            : "border-slate-200 hover:border-emerald-200 hover:bg-slate-50"
                         }`}
                       >
                         <span
                           className={`block font-medium line-clamp-1 ${
-                            theme === "dark" ? "text-blue-400" : "text-blue-700"
+                            theme === "dark" ? "text-emerald-400" : "text-emerald-700"
                           }`}
                         >
                           {item.company || "Experience"}
