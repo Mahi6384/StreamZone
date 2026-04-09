@@ -23,6 +23,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "browserslist:update": "npx update-browserslist-db@latest",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
