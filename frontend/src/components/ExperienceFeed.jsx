@@ -256,16 +256,16 @@ const ExperienceFeed = () => {
                         : "border-slate-200 bg-slate-100 text-slate-800"
                     }`}
                   >
-                    {/* {c} */}
+                    <span>{c}</span>
                     <button
                       type="button"
                       className="rounded p-0.5 hover:bg-slate-600/30"
                       onClick={() =>
                         setDraftCompanies((prev) => prev.filter((x) => x !== c))
                       }
-                      // aria-label={`Remove ${c}`}
+                      aria-label={`Remove ${c}`}
                     >
-                      {/* <HiX className="h-3.5 w-3.5" /> */}
+                      <HiX className="h-3.5 w-3.5" />
                     </button>
                   </li>
                 ))}
@@ -326,16 +326,16 @@ const ExperienceFeed = () => {
                         : "border-slate-200 bg-slate-100 text-slate-800"
                     }`}
                   >
-                    {/* {r} */}
+                    <span>{r}</span>
                     <button
                       type="button"
                       className="rounded p-0.5 hover:bg-slate-600/30"
                       onClick={() =>
                         setDraftRoles((prev) => prev.filter((x) => x !== r))
                       }
-                      // aria-label={`Remove ${r}`}
+                      aria-label={`Remove ${r}`}
                     >
-                      {/* <HiX className="h-3.5 w-3.5" /> */}
+                      <HiX className="h-3.5 w-3.5" />
                     </button>
                   </li>
                 ))}
