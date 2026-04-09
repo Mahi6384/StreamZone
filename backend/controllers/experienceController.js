@@ -1,4 +1,6 @@
 const Experience = require("../models/experienceModel");
+const fs = require("fs/promises");
+const { getCloudinary } = require("../utils/cloudinary");
 
 function toPlain(doc) {
   if (!doc) return null;
@@ -147,15 +149,49 @@ const getAllExperiences = async (req, res) => {
 
 const shareExperience = async (req, res) => {
   try {
+    const cloudinary = getCloudinary();
+
+    async function uploadLocalFile(file, { folder }) {
+      if (!file?.path) return null;
+      const isVideo = file.mimetype?.startsWith("video/");
+      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+      const publicId = isVideo ? `video-${uniqueSuffix}` : `image-${uniqueSuffix}`;
+      try {
+        const result = await cloudinary.uploader.upload(file.path, {
+          folder,
+          resource_type: isVideo ? "video" : "image",
+          public_id: publicId,
+        });
+        return result?.secure_url || result?.url || null;
+      } finally {
+        // Always attempt cleanup of temp files
+        try {
+          await fs.unlink(file.path);
+        } catch {
+          /* ignore cleanup errors */
+        }
+      }
+    }
+
     const videoFile = req.files?.video?.[0];
-    const url = videoFile?.path;
+    const url = await uploadLocalFile(videoFile, { folder: "insighthire/experiences" });
     const thumbnail = url ? url.replace(/\.[^/.]+$/, ".jpg") : undefined;
-    const detailsNotesImages = (req.files?.detailsNotesImages || [])
-      .map((f) => f.path)
-      .filter(Boolean);
-    const questionsNotesImages = (req.files?.questionsNotesImages || [])
-      .map((f) => f.path)
-      .filter(Boolean);
+
+    const detailsNotesImages = (
+      await Promise.all(
+        (req.files?.detailsNotesImages || []).map((f) =>
+          uploadLocalFile(f, { folder: "insighthire/experiences" })
+        )
+      )
+    ).filter(Boolean);
+
+    const questionsNotesImages = (
+      await Promise.all(
+        (req.files?.questionsNotesImages || []).map((f) =>
+          uploadLocalFile(f, { folder: "insighthire/experiences" })
+        )
+      )
+    ).filter(Boolean);
 
     const {
       title,
