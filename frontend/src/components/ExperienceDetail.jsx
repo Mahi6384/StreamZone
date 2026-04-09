@@ -24,8 +24,12 @@ function idIncluded(list, uid) {
 
 function Section({ theme, title, children, className = "" }) {
   return (
-    <section className={`rounded-2xl p-4 sm:p-5 ${panel(theme)} ${className}`.trim()}>
-      <h3 className={`text-sm font-semibold uppercase tracking-wide text-slate-500 mb-3`}>
+    <section
+      className={`rounded-2xl p-4 sm:p-5 ${panel(theme)} ${className}`.trim()}
+    >
+      <h3
+        className={`text-sm font-semibold uppercase tracking-wide text-slate-500 mb-3`}
+      >
         {title}
       </h3>
       {children}
@@ -35,31 +39,6 @@ function Section({ theme, title, children, className = "" }) {
 
 function roundAnchorId(idx) {
   return `experience-round-${idx}`;
-}
-
-function RoundsJumpList({ theme, rounds, className = "" }) {
-  if (!rounds?.length) return null;
-  const linkCls =
-    theme === "dark"
-      ? "text-emerald-400/95 hover:text-emerald-300 underline-offset-2 hover:underline"
-      : "text-emerald-700 hover:text-emerald-800 underline-offset-2 hover:underline";
-  return (
-    <nav className={className} aria-label="Jump to interview round">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
-        Jump to round
-      </p>
-      <ul className="flex flex-col gap-1.5 text-[13px]">
-        {rounds.map((round, idx) => (
-          <li key={idx}>
-            <a href={`#${roundAnchorId(idx)}`} className={`block font-medium leading-snug ${linkCls}`}>
-              Round {String(idx + 1).padStart(2, "0")}
-              {round.name?.trim() ? ` · ${round.name.trim()}` : ""}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  );
 }
 
 function ImageStrip({ theme, urls }) {
@@ -73,7 +52,9 @@ function ImageStrip({ theme, urls }) {
           target="_blank"
           rel="noreferrer"
           className={`group overflow-hidden rounded-xl border ${
-            theme === "dark" ? "border-slate-700 bg-slate-950" : "border-slate-200 bg-white"
+            theme === "dark"
+              ? "border-slate-700 bg-slate-950"
+              : "border-slate-200 bg-white"
           }`}
         >
           <img
@@ -112,7 +93,9 @@ const ExperienceDetail = () => {
       setLoading(true);
       const params = userId ? { viewerId: userId } : {};
       try {
-        const expRes = await axios.get(`${EXPERIENCES_API}/${idStr}`, { params });
+        const expRes = await axios.get(`${EXPERIENCES_API}/${idStr}`, {
+          params,
+        });
         if (cancelled) return;
         setExperience(expRes.data);
         setHelpful(expRes.data.helpful || []);
@@ -130,7 +113,9 @@ const ExperienceDetail = () => {
       } catch (err) {
         if (cancelled) return;
         if (err.response?.status === 403) {
-          setError("This experience is private. Only the candidate can open it.");
+          setError(
+            "This experience is private. Only the candidate can open it.",
+          );
         } else if (err.response?.status === 404) {
           setError("Experience not found.");
         } else {
@@ -200,7 +185,9 @@ const ExperienceDetail = () => {
 
   if (loading) {
     return (
-      <div className={`flex min-h-screen items-center justify-center pt-20 ${pageBg(theme)}`}>
+      <div
+        className={`flex min-h-screen items-center justify-center pt-20 ${pageBg(theme)}`}
+      >
         <span className="loading loading-spinner loading-lg text-emerald-500" />
       </div>
     );
@@ -210,7 +197,7 @@ const ExperienceDetail = () => {
     return (
       <div
         className={`flex min-h-screen flex-col items-center justify-center gap-4 px-4 pt-20 text-center ${pageBg(
-          theme
+          theme,
         )}`}
       >
         <p
@@ -250,17 +237,23 @@ const ExperienceDetail = () => {
         <header className={`mb-6 rounded-2xl p-4 sm:p-5 ${panel(theme)}`}>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0 flex-1">
-              <p className={`text-xl font-semibold tracking-tight sm:text-2xl ${headingPage(theme)}`}>
+              <p
+                className={`text-xl font-semibold tracking-tight sm:text-2xl ${headingPage(theme)}`}
+              >
                 {company}
               </p>
               {role && (
-                <p className={`mt-1 text-base ${theme === "dark" ? "text-slate-400" : "text-slate-600"}`}>
+                <p
+                  className={`mt-1 text-base ${theme === "dark" ? "text-slate-400" : "text-slate-600"}`}
+                >
                   {role}
                 </p>
               )}
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 {experience.experienceLevel && (
-                  <span className={accentBadge(theme)}>{experience.experienceLevel}</span>
+                  <span className={accentBadge(theme)}>
+                    {experience.experienceLevel}
+                  </span>
                 )}
                 <span
                   className={`text-xs font-medium ${
@@ -279,7 +272,9 @@ const ExperienceDetail = () => {
               >
                 {experience.title}
               </h1>
-              <p className={`mt-2 text-sm ${theme === "dark" ? "text-slate-400" : "text-slate-600"}`}>
+              <p
+                className={`mt-2 text-sm ${theme === "dark" ? "text-slate-400" : "text-slate-600"}`}
+              >
                 <span className="font-medium text-slate-500">Candidate:</span>{" "}
                 {experience.candidate || "Anonymous"}
               </p>
@@ -295,7 +290,9 @@ const ExperienceDetail = () => {
                   type="button"
                   onClick={() => handleReaction("helpful")}
                   className={`flex items-center gap-2 border-r px-4 py-2.5 text-sm font-medium transition-colors ${
-                    theme === "dark" ? "border-slate-600/60" : "border-slate-200"
+                    theme === "dark"
+                      ? "border-slate-600/60"
+                      : "border-slate-200"
                   } ${
                     markedHelpful
                       ? "bg-emerald-600/20 text-emerald-400"
@@ -336,59 +333,10 @@ const ExperienceDetail = () => {
                   theme === "dark" ? "text-slate-300" : "text-slate-700"
                 }`}
               >
-                {experience.description || "No summary provided for this experience."}
+                {experience.description ||
+                  "No summary provided for this experience."}
               </p>
             </Section>
-
-            <Section theme={theme} title="Interview details">
-              <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3 text-sm">
-                <div>
-                  <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                    Level
-                  </dt>
-                  <dd className={`mt-1 font-medium ${headingPage(theme)}`}>
-                    {experience.experienceLevel || "—"}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                    Rounds
-                  </dt>
-                  <dd className={`mt-1 font-medium ${headingPage(theme)}`}>
-                    {experience.interviewRounds ?? "—"}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                    Outcome
-                  </dt>
-                  <dd className={`mt-1 font-medium ${headingPage(theme)}`}>
-                    {experience.outcome
-                      ? experience.outcome === "selected"
-                        ? "Selected"
-                        : "Not selected"
-                      : "—"}
-                  </dd>
-                </div>
-              </dl>
-
-              {experience.detailsNotes?.trim() ? (
-                <div
-                  className={`mt-4 rounded-xl border p-3 text-sm ${
-                    theme === "dark"
-                      ? "border-slate-700 bg-slate-900/40 text-slate-300"
-                      : "border-slate-200 bg-slate-50 text-slate-700"
-                  }`}
-                >
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">
-                    Notes
-                  </p>
-                  <p className="whitespace-pre-wrap leading-relaxed">{experience.detailsNotes}</p>
-                  <ImageStrip theme={theme} urls={experience.detailsNotesImages} />
-                </div>
-              ) : null}
-            </Section>
-
             <Section
               theme={theme}
               title={
@@ -405,91 +353,97 @@ const ExperienceDetail = () => {
                         ? "border-slate-700 bg-slate-900/30"
                         : "border-slate-200 bg-slate-50/90"
                     }`}
-                  >
-                    <RoundsJumpList theme={theme} rounds={experience.interviewRoundDetails} />
-                  </div>
+                  ></div>
                   <div className="space-y-5">
-                  {experience.interviewRoundDetails.map((round, idx) => {
-                    const lines = String(round.questionsText || "")
-                      .split(/\r?\n/)
-                      .map((s) => s.trim())
-                      .filter(Boolean);
-                    return (
-                      <div
-                        key={idx}
-                        id={roundAnchorId(idx)}
-                        className={`scroll-mt-28 overflow-hidden rounded-xl border text-sm ${
-                          theme === "dark"
-                            ? "border-slate-700 bg-slate-900/35"
-                            : "border-slate-200 bg-white"
-                        }`}
-                      >
+                    {experience.interviewRoundDetails.map((round, idx) => {
+                      const lines = String(round.questionsText || "")
+                        .split(/\r?\n/)
+                        .map((s) => s.trim())
+                        .filter(Boolean);
+                      return (
                         <div
-                          className={`flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 ${
-                            theme === "dark" ? "bg-emerald-950/35" : "bg-emerald-50/90"
+                          key={idx}
+                          id={roundAnchorId(idx)}
+                          className={`scroll-mt-28 overflow-hidden rounded-xl border text-sm ${
+                            theme === "dark"
+                              ? "border-slate-700 bg-slate-900/35"
+                              : "border-slate-200 bg-white"
                           }`}
                         >
-                          <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                            Round {String(idx + 1).padStart(2, "0")}
-                            {round.name ? ` · ${round.name}` : ""}
-                          </span>
+                          <div
+                            className={`flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 ${
+                              theme === "dark"
+                                ? "bg-emerald-950/35"
+                                : "bg-emerald-50/90"
+                            }`}
+                          >
+                            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                              Round {String(idx + 1).padStart(2, "0")}
+                              {round.name ? ` · ${round.name}` : ""}
+                            </span>
+                          </div>
+                          <div className="space-y-3 p-4">
+                            {lines.length ? (
+                              <div>
+                                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                  Questions asked
+                                </p>
+                                <ol className="list-decimal space-y-2 pl-4">
+                                  {lines.map((q, i) => (
+                                    <li
+                                      key={i}
+                                      className={
+                                        theme === "dark"
+                                          ? "text-slate-300"
+                                          : "text-slate-700"
+                                      }
+                                    >
+                                      {q}
+                                    </li>
+                                  ))}
+                                </ol>
+                              </div>
+                            ) : (
+                              <p className="text-slate-500">
+                                No questions listed for this round.
+                              </p>
+                            )}
+                            {round.notes?.trim() ? (
+                              <div
+                                className={`rounded-lg border p-3 text-sm ${
+                                  theme === "dark"
+                                    ? "border-slate-700 bg-slate-950/50 text-slate-300"
+                                    : "border-slate-200 bg-slate-50 text-slate-700"
+                                }`}
+                              >
+                                <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                  Notes &amp; strategies
+                                </p>
+                                <p className="whitespace-pre-wrap leading-relaxed">
+                                  {round.notes}
+                                </p>
+                              </div>
+                            ) : null}
+                            {round.preparationTips?.trim() ? (
+                              <div
+                                className={`rounded-lg border p-3 text-sm ${
+                                  theme === "dark"
+                                    ? "border-emerald-500/20 bg-emerald-950/25 text-slate-300"
+                                    : "border-emerald-200/80 bg-emerald-50/50 text-slate-700"
+                                }`}
+                              >
+                                <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                  Preparation tips
+                                </p>
+                                <p className="whitespace-pre-wrap leading-relaxed">
+                                  {round.preparationTips}
+                                </p>
+                              </div>
+                            ) : null}
+                          </div>
                         </div>
-                        <div className="space-y-3 p-4">
-                          {lines.length ? (
-                            <div>
-                              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                                Questions asked
-                              </p>
-                              <ol className="list-decimal space-y-2 pl-4">
-                                {lines.map((q, i) => (
-                                  <li
-                                    key={i}
-                                    className={
-                                      theme === "dark" ? "text-slate-300" : "text-slate-700"
-                                    }
-                                  >
-                                    {q}
-                                  </li>
-                                ))}
-                              </ol>
-                            </div>
-                          ) : (
-                            <p className="text-slate-500">No questions listed for this round.</p>
-                          )}
-                          {round.notes?.trim() ? (
-                            <div
-                              className={`rounded-lg border p-3 text-sm ${
-                                theme === "dark"
-                                  ? "border-slate-700 bg-slate-950/50 text-slate-300"
-                                  : "border-slate-200 bg-slate-50 text-slate-700"
-                              }`}
-                            >
-                              <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                                Notes &amp; strategies
-                              </p>
-                              <p className="whitespace-pre-wrap leading-relaxed">{round.notes}</p>
-                            </div>
-                          ) : null}
-                          {round.preparationTips?.trim() ? (
-                            <div
-                              className={`rounded-lg border p-3 text-sm ${
-                                theme === "dark"
-                                  ? "border-emerald-500/20 bg-emerald-950/25 text-slate-300"
-                                  : "border-emerald-200/80 bg-emerald-50/50 text-slate-700"
-                              }`}
-                            >
-                              <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                                Preparation tips
-                              </p>
-                              <p className="whitespace-pre-wrap leading-relaxed">
-                                {round.preparationTips}
-                              </p>
-                            </div>
-                          ) : null}
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
                   </div>
                 </>
               ) : experience.questions?.length ? (
@@ -497,7 +451,9 @@ const ExperienceDetail = () => {
                   {experience.questions.map((q, i) => (
                     <li
                       key={`${i}-${q.slice(0, 20)}`}
-                      className={theme === "dark" ? "text-slate-300" : "text-slate-700"}
+                      className={
+                        theme === "dark" ? "text-slate-300" : "text-slate-700"
+                      }
                     >
                       {q}
                     </li>
@@ -518,8 +474,13 @@ const ExperienceDetail = () => {
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">
                     Notes
                   </p>
-                  <p className="whitespace-pre-wrap leading-relaxed">{experience.questionsNotes}</p>
-                  <ImageStrip theme={theme} urls={experience.questionsNotesImages} />
+                  <p className="whitespace-pre-wrap leading-relaxed">
+                    {experience.questionsNotes}
+                  </p>
+                  <ImageStrip
+                    theme={theme}
+                    urls={experience.questionsNotesImages}
+                  />
                 </div>
               ) : null}
             </Section>
@@ -541,13 +502,19 @@ const ExperienceDetail = () => {
             <section className={`rounded-2xl p-4 sm:p-5 ${panel(theme)}`}>
               <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-1">
                 Discussion
-                <span className="ml-2 font-normal normal-case text-slate-500">({discussion.length})</span>
+                <span className="ml-2 font-normal normal-case text-slate-500">
+                  ({discussion.length})
+                </span>
               </h3>
               <p className="text-xs text-slate-500 mb-5">
-                Ask follow-ups or add context for others reading this experience.
+                Ask follow-ups or add context for others reading this
+                experience.
               </p>
 
-              <form onSubmit={handleAddDiscussion} className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <form
+                onSubmit={handleAddDiscussion}
+                className="flex flex-col gap-3 sm:flex-row sm:items-center"
+              >
                 <input
                   type="text"
                   placeholder="Write a reply…"
@@ -571,14 +538,18 @@ const ExperienceDetail = () => {
                     <div className="flex gap-3">
                       <div
                         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-                          theme === "dark" ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700"
+                          theme === "dark"
+                            ? "bg-slate-700 text-slate-200"
+                            : "bg-slate-200 text-slate-700"
                         }`}
                       >
                         {entry.userName?.[0]?.toUpperCase() || "?"}
                       </div>
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-baseline gap-2">
-                          <span className={`text-sm font-semibold ${headingPage(theme)}`}>
+                          <span
+                            className={`text-sm font-semibold ${headingPage(theme)}`}
+                          >
                             {entry.userName}
                           </span>
                           <span className="text-xs text-slate-500">
@@ -589,7 +560,9 @@ const ExperienceDetail = () => {
                         </div>
                         <p
                           className={`mt-1 text-sm leading-relaxed ${
-                            theme === "dark" ? "text-slate-300" : "text-slate-700"
+                            theme === "dark"
+                              ? "text-slate-300"
+                              : "text-slate-700"
                           }`}
                         >
                           {entry.text}
@@ -609,11 +582,18 @@ const ExperienceDetail = () => {
               </h3>
               <div
                 className={`overflow-hidden rounded-xl border ${
-                  theme === "dark" ? "border-slate-700 bg-black" : "border-slate-200 bg-slate-900"
+                  theme === "dark"
+                    ? "border-slate-700 bg-black"
+                    : "border-slate-200 bg-slate-900"
                 }`}
               >
                 {videoSrc ? (
-                  <video key={videoSrc} className="max-h-[220px] w-full object-contain" controls playsInline>
+                  <video
+                    key={videoSrc}
+                    className="max-h-[220px] w-full object-contain"
+                    controls
+                    playsInline
+                  >
                     <source src={videoSrc} type="video/mp4" />
                   </video>
                 ) : (
@@ -623,12 +603,6 @@ const ExperienceDetail = () => {
                 )}
               </div>
             </div>
-
-            {experience.interviewRoundDetails?.length ? (
-              <div className={`hidden rounded-2xl p-4 lg:block ${panelMuted(theme)}`}>
-                <RoundsJumpList theme={theme} rounds={experience.interviewRoundDetails} />
-              </div>
-            ) : null}
 
             {experience.tipsNotes?.trim() ? (
               <div
@@ -653,7 +627,9 @@ const ExperienceDetail = () => {
                 Related experiences
               </h3>
               {related.length === 0 ? (
-                <p className="text-sm text-slate-500">No other public experiences right now.</p>
+                <p className="text-sm text-slate-500">
+                  No other public experiences right now.
+                </p>
               ) : (
                 <ul className="space-y-3">
                   {related.map((item) => (
@@ -669,14 +645,18 @@ const ExperienceDetail = () => {
                       >
                         <span
                           className={`block font-medium line-clamp-1 ${
-                            theme === "dark" ? "text-emerald-400" : "text-emerald-700"
+                            theme === "dark"
+                              ? "text-emerald-400"
+                              : "text-emerald-700"
                           }`}
                         >
                           {item.company || "Experience"}
                         </span>
                         <span
                           className={`mt-0.5 block text-xs line-clamp-2 ${
-                            theme === "dark" ? "text-slate-400" : "text-slate-600"
+                            theme === "dark"
+                              ? "text-slate-400"
+                              : "text-slate-600"
                           }`}
                         >
                           {item.title}
