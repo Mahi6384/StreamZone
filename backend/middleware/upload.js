@@ -32,6 +32,8 @@ const upload = multer({
   fileFilter: fileFilter,
   limits: {
     fileSize: 75 * 1024 * 1024, // 75MB limit
+    // Large JSON in interviewRoundDetails must not be truncated (default can be tight on some setups)
+    fieldSize: 12 * 1024 * 1024,
   },
 });
 
