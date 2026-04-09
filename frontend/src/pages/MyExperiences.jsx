@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { EXPERIENCES_API } from "../config/api";
 import ExperienceCard from "../components/ExperienceCard";
 import { Button } from "../components/ui/Button";
-import { pageBg, panelEmpty, headingPage, subheading, linkButton } from "../theme/ui";
+import { pageBg, panelEmpty, headingPage, linkButton } from "../theme/ui";
 import { useTheme } from "../context/ThemeContext";
 
 const MyExperiences = () => {
@@ -39,21 +39,25 @@ const MyExperiences = () => {
 
   if (loading) {
     return (
-      <div className={`flex flex-col items-center justify-center min-h-screen ${pageBg(theme)}`}>
-        <span className="loading loading-spinner loading-lg text-blue-500" />
+      <div className={`flex min-h-screen flex-col items-center justify-center pt-20 ${pageBg(theme)}`}>
+        <span className="loading loading-spinner loading-lg text-emerald-500" />
         <p className="mt-4 text-sm text-slate-500">Loading your library…</p>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen pt-[4.25rem] pb-10 px-3 sm:px-6 ${pageBg(theme)}`}>
-      <div className="max-w-5xl mx-auto">
-        <div className="mb-6 text-center sm:text-left">
-          <h1 className={`text-xl font-semibold sm:text-2xl ${headingPage(theme)}`}>
+    <div className={`min-h-screen pt-20 pb-14 px-4 sm:px-6 ${pageBg(theme)}`}>
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-8 text-center sm:text-left">
+          <h1 className={`text-xl font-bold tracking-tight sm:text-2xl ${headingPage(theme)}`}>
             My experiences
           </h1>
-          <p className={`mt-1.5 max-w-xl text-sm ${subheading}`}>
+          <p
+            className={`mt-2 max-w-xl text-sm leading-relaxed ${
+              theme === "dark" ? "text-slate-300" : "text-slate-600"
+            }`}
+          >
             Everything you have shared — public entries appear on the feed; private ones stay here for
             your own tracking.
           </p>
@@ -61,7 +65,7 @@ const MyExperiences = () => {
 
         {error && (
           <div
-            className={`mb-8 rounded-lg border px-4 py-3 text-sm ${
+            className={`mb-8 rounded-2xl border px-4 py-3 text-sm ${
               theme === "dark"
                 ? "border-amber-500/30 bg-amber-950/20 text-amber-200"
                 : "border-amber-200 bg-amber-50 text-amber-900"
@@ -72,7 +76,7 @@ const MyExperiences = () => {
         )}
 
         {experiences.length === 0 ? (
-          <div className={`mx-auto max-w-lg rounded-lg p-6 text-center ${panelEmpty(theme)}`}>
+          <div className={`mx-auto max-w-lg rounded-2xl p-6 text-center ${panelEmpty(theme)}`}>
             <p className={`text-base font-medium ${headingPage(theme)}`}>No experiences yet</p>
             <p className="mt-3 text-sm leading-relaxed text-slate-500">
               When you document a loop — company, questions, tips — it shows up here. Start with one

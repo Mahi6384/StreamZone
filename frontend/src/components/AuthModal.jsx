@@ -18,7 +18,7 @@ const AuthModal = ({ isOpen, onClose }) => {
       <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm" onClick={onClose} aria-hidden />
 
       <div
-        className={`relative w-full max-w-sm overflow-hidden rounded-lg shadow-xl sm:max-w-md ${panel(theme)}`}
+        className={`relative w-full max-w-sm overflow-hidden rounded-2xl shadow-xl sm:max-w-md ${panel(theme)}`}
         role="dialog"
         aria-modal="true"
       >
@@ -44,7 +44,7 @@ const AuthModal = ({ isOpen, onClose }) => {
             type="button"
             className={`flex-1 py-3 text-sm font-semibold transition-colors ${
               isLogin
-                ? "border-b-2 border-blue-500 text-blue-500"
+                ? "border-b-2 border-emerald-500 text-emerald-500"
                 : theme === "dark"
                   ? "text-slate-500 hover:text-slate-300"
                   : "text-slate-500 hover:text-slate-800"
@@ -57,7 +57,7 @@ const AuthModal = ({ isOpen, onClose }) => {
             type="button"
             className={`flex-1 py-3 text-sm font-semibold transition-colors ${
               !isLogin
-                ? "border-b-2 border-blue-500 text-blue-500"
+                ? "border-b-2 border-emerald-500 text-emerald-500"
                 : theme === "dark"
                   ? "text-slate-500 hover:text-slate-300"
                   : "text-slate-500 hover:text-slate-800"

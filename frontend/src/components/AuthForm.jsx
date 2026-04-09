@@ -80,9 +80,9 @@ const AuthForm = ({ title, buttonText, showName, onClose }) => {
 
   const inner = (
     <div className={`w-full ${inModal ? "p-6 sm:p-8" : "mx-auto max-w-md px-4 py-16 sm:py-20"}`}>
-      <div className={`${inModal ? "" : `${panel(theme)} rounded-xl p-8 sm:p-10`}`}>
+      <div className={`${inModal ? "" : `${panel(theme)} rounded-2xl p-8 sm:p-10`}`}>
         <div className="mb-8 text-center">
-          <h2 className={`text-2xl font-semibold tracking-tight ${headingPage(theme)}`}>{title}</h2>
+          <h2 className={`text-2xl font-bold tracking-tight ${headingPage(theme)}`}>{title}</h2>
           <p className={`mt-2 text-sm ${subheading}`}>Interview experience sharing</p>
         </div>
 
@@ -90,7 +90,7 @@ const AuthForm = ({ title, buttonText, showName, onClose }) => {
           <button
             type="button"
             onClick={handleGoogle}
-            className={`flex w-full items-center justify-center gap-3 rounded-lg border py-3 text-sm font-medium transition-colors ${
+            className={`flex w-full items-center justify-center gap-3 rounded-xl border py-3 text-sm font-medium transition-colors ${
               theme === "dark"
                 ? "border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700/90"
                 : "border-slate-300 bg-white text-slate-800 hover:bg-slate-50"
@@ -182,7 +182,7 @@ const AuthForm = ({ title, buttonText, showName, onClose }) => {
 
   if (inModal) return inner;
 
-  return <div className={`min-h-screen ${pageBg(theme)}`}>{inner}</div>;
+  return <div className={`min-h-screen pt-20 ${pageBg(theme)}`}>{inner}</div>;
 };
 
 export default AuthForm;
