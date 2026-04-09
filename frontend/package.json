@@ -47,5 +47,8 @@
   },
   "devDependencies": {
     "tailwindcss": "^3.4.17"
+  },
+  "overrides": {
+    "postcss-calc": "10.1.1"
   }
 }
