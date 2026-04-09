@@ -104,19 +104,31 @@ const ExperienceDetail = () => {
   const userId = user?.id ?? user?._id;
 
   useEffect(() => {
+    let cancelled = false;
+    const idStr = id != null ? String(id) : "";
+
     const fetchData = async () => {
+      setError(null);
+      setLoading(true);
+      const params = userId ? { viewerId: userId } : {};
       try {
-        setLoading(true);
-        const params = userId ? { viewerId: userId } : {};
-        const expRes = await axios.get(`${EXPERIENCES_API}/${id}`, { params });
+        const expRes = await axios.get(`${EXPERIENCES_API}/${idStr}`, { params });
+        if (cancelled) return;
         setExperience(expRes.data);
         setHelpful(expRes.data.helpful || []);
         setNotHelpful(expRes.data.notHelpful || []);
         setDiscussion(expRes.data.discussion || []);
 
-        const allRes = await axios.get(EXPERIENCES_API);
-        setRelated(allRes.data.filter((ex) => ex._id !== id).slice(0, 8));
+        try {
+          const allRes = await axios.get(EXPERIENCES_API);
+          if (cancelled) return;
+          const list = Array.isArray(allRes.data) ? allRes.data : [];
+          setRelated(list.filter((ex) => String(ex._id) !== idStr).slice(0, 8));
+        } catch {
+          if (!cancelled) setRelated([]);
+        }
       } catch (err) {
+        if (cancelled) return;
         if (err.response?.status === 403) {
           setError("This experience is private. Only the candidate can open it.");
         } else if (err.response?.status === 404) {
@@ -124,13 +136,29 @@ const ExperienceDetail = () => {
         } else {
           setError("We could not load this experience.");
         }
+        setExperience(null);
+        setHelpful([]);
+        setNotHelpful([]);
+        setDiscussion([]);
+        setRelated([]);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
+    if (!idStr) {
+      setLoading(false);
+      setError("Experience not found.");
+      return () => {
+        cancelled = true;
+      };
+    }
+
     fetchData();
     window.scrollTo(0, 0);
+    return () => {
+      cancelled = true;
+    };
   }, [id, userId]);
 
   const handleReaction = async (kind) => {

@@ -140,32 +140,55 @@ const ShareExperiencePage = () => {
     }
 
     setUploading(true);
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("description", description);
-    if (file) formData.append("video", file);
-    formData.append("candidate", user.name || "Anonymous");
-    if (userId) formData.append("candidateId", userId);
-    formData.append("visibility", visibility);
-    formData.append("company", company);
-    formData.append("role", role);
-    formData.append("experienceLevel", experienceLevel);
-    formData.append("interviewRoundDetails", JSON.stringify(forSubmit));
-    // Legacy / fallback: older deployments only read `questions`; keeps publish working if
-    // interviewRoundDetails is missing or not parsed server-side.
-    formData.append("questions", JSON.stringify(questionLines));
-    formData.append("interviewRounds", String(forSubmit.length));
-    if (detailsNotes) formData.append("detailsNotes", detailsNotes);
-    if (questionsNotes) formData.append("questionsNotes", questionsNotes);
-    formData.append("tips", tips);
-    if (tipsNotes) formData.append("tipsNotes", tipsNotes);
-    if (outcome) formData.append("outcome", outcome);
+
+    const jsonBody = {
+      title,
+      description,
+      candidate: user.name || "Anonymous",
+      visibility,
+      company,
+      role,
+      experienceLevel,
+      interviewRoundDetails: forSubmit,
+      structuredRounds: true,
+      questions: questionLines,
+      interviewRounds: forSubmit.length,
+      tips,
+    };
+    if (userId) jsonBody.candidateId = userId;
+    if (detailsNotes) jsonBody.detailsNotes = detailsNotes;
+    if (questionsNotes) jsonBody.questionsNotes = questionsNotes;
+    if (tipsNotes) jsonBody.tipsNotes = tipsNotes;
+    if (outcome) jsonBody.outcome = outcome;
 
     try {
-      // Let axios set multipart boundary; manual Content-Type breaks field parsing.
-      await axios.post(`${EXPERIENCES_API}/upload`, formData);
-      toast.success("Your experience was published.");
-      navigate("/");
+      const res = await axios.post(`${EXPERIENCES_API}`, jsonBody);
+      const newId = res.data?._id;
+      let videoUploadFailed = false;
+
+      if (file && newId) {
+        const videoForm = new FormData();
+        videoForm.append("video", file);
+        try {
+          await axios.post(`${EXPERIENCES_API}/${newId}/attach-video`, videoForm);
+        } catch (videoErr) {
+          console.error(videoErr);
+          videoUploadFailed = true;
+          toast.error(
+            publishErrorMessage(videoErr) ||
+              "Experience saved, but the video could not be uploaded.",
+          );
+        }
+      }
+
+      if (!videoUploadFailed) {
+        toast.success("Your experience was published.");
+      }
+      if (newId) {
+        navigate(`/experience/${newId}`);
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       console.error(error);
       toast.error(publishErrorMessage(error));

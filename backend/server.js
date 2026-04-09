@@ -19,7 +19,7 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 //urlencoded means it is saying express read form data from the frontend or postman
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
