@@ -93,6 +93,9 @@ const Navbar = () => {
               Interview knowledge
             </span>
           </button>
+        </div>
+
+        <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">
           <button
             type="button"
             onClick={() => navigate("/")}
@@ -100,11 +103,8 @@ const Navbar = () => {
             title="Home"
           >
             <HiHome className="h-4 w-4 text-emerald-500" aria-hidden />
-            <span className="text-sm font-medium">Home</span>
+            {/* <span className="text-sm font-medium">Home</span> */}
           </button>
-        </div>
-
-        <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">
           <button
             type="button"
             onClick={() => navigate("/about")}
@@ -123,7 +123,9 @@ const Navbar = () => {
                 ? "border-slate-700 bg-slate-900 hover:bg-slate-800"
                 : "border-slate-200 bg-white hover:bg-slate-50"
             }`}
-            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            title={
+              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+            }
           >
             <span className="sr-only">Toggle theme</span>
             <span
@@ -134,7 +136,12 @@ const Navbar = () => {
               }`}
             >
               {theme === "dark" ? (
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -143,7 +150,12 @@ const Navbar = () => {
                   />
                 </svg>
               ) : (
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -174,7 +186,11 @@ const Navbar = () => {
           </button>
 
           {!user ? (
-            <button type="button" onClick={() => setIsAuthModalOpen(true)} className={ghostButton(theme)}>
+            <button
+              type="button"
+              onClick={() => setIsAuthModalOpen(true)}
+              className={ghostButton(theme)}
+            >
               Sign in
             </button>
           ) : (
@@ -185,10 +201,14 @@ const Navbar = () => {
                 aria-haspopup="menu"
                 aria-expanded={isAccountOpen}
                 className={`flex items-center gap-2 rounded-lg px-1 py-1 ${
-                  theme === "dark" ? "hover:bg-slate-800/50" : "hover:bg-slate-100"
+                  theme === "dark"
+                    ? "hover:bg-slate-800/50"
+                    : "hover:bg-slate-100"
                 }`}
               >
-                <span className={`hidden max-w-[5rem] truncate text-sm font-medium sm:block ${theme === "dark" ? "text-slate-300" : "text-slate-700"}`}>
+                <span
+                  className={`hidden max-w-[5rem] truncate text-sm font-medium sm:block ${theme === "dark" ? "text-slate-300" : "text-slate-700"}`}
+                >
                   {user?.name?.split(" ")[0] || "User"}
                 </span>
                 <div className="h-9 w-9 overflow-hidden rounded-full border border-slate-600 bg-slate-800">
@@ -202,8 +222,12 @@ const Navbar = () => {
 
               {isAccountOpen ? (
                 <div role="menu" className={accountMenuCls}>
-                  <div className={`mb-2 border-b px-3 pb-2 ${theme === "dark" ? "border-slate-700" : "border-slate-100"}`}>
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Account</p>
+                  <div
+                    className={`mb-2 border-b px-3 pb-2 ${theme === "dark" ? "border-slate-700" : "border-slate-100"}`}
+                  >
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                      Account
+                    </p>
                     <p className="truncate text-sm font-medium">{user.email}</p>
                   </div>
 
@@ -215,7 +239,9 @@ const Navbar = () => {
                       handleMyExperiencesClick();
                     }}
                     className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm ${
-                      theme === "dark" ? "hover:bg-slate-800" : "hover:bg-slate-100"
+                      theme === "dark"
+                        ? "hover:bg-slate-800"
+                        : "hover:bg-slate-100"
                     }`}
                   >
                     My experiences
@@ -230,14 +256,18 @@ const Navbar = () => {
                       navigate("/about");
                     }}
                     className={`mt-1 flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm ${
-                      theme === "dark" ? "hover:bg-slate-800" : "hover:bg-slate-100"
+                      theme === "dark"
+                        ? "hover:bg-slate-800"
+                        : "hover:bg-slate-100"
                     }`}
                   >
                     What is InsightHire?
                     <span className="text-xs opacity-60">↗</span>
                   </button>
 
-                  <div className={`mt-2 border-t pt-2 ${theme === "dark" ? "border-slate-700" : "border-slate-100"}`}>
+                  <div
+                    className={`mt-2 border-t pt-2 ${theme === "dark" ? "border-slate-700" : "border-slate-100"}`}
+                  >
                     <button
                       type="button"
                       role="menuitem"
@@ -258,7 +288,10 @@ const Navbar = () => {
         </div>
       </div>
 
-      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
     </nav>
   );
 };
