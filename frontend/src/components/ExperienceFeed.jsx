@@ -16,33 +16,10 @@ import {
 } from "../theme/ui";
 import { useTheme } from "../context/ThemeContext";
 
-const EXPERIENCE_LEVELS = ["Intern", "SDE1", "SDE2", "SDE3", "Senior", "Staff", "Other"];
-
-const PRESET_COMPANIES = [
-  "Google",
-  "Meta",
-  "Amazon",
-  "Microsoft",
-  "Apple",
-  "Netflix",
-  "Stripe",
-  "Uber",
-  "Airbnb",
-  "LinkedIn",
-  "Adobe",
-  "Oracle",
-];
+const PRESET_COMPANIES = ["Google", "Uber", "LinkedIn", "Adobe", "Oracle"];
 
 const PRESET_ROLES = [
   "Software Engineer",
-  "Backend Engineer",
-  "Frontend Engineer",
-  "Full Stack Engineer",
-  "ML Engineer",
-  "Data Engineer",
-  "DevOps Engineer",
-  "SRE",
-  "Mobile Engineer",
   "Product Engineer",
   "Security Engineer",
   "Engineering Manager",
@@ -57,7 +34,7 @@ function buildFilterQuery(params) {
   const p = new URLSearchParams();
   params.companies.forEach((c) => p.append("companies", c));
   params.roles.forEach((r) => p.append("roles", r));
-  params.levels.forEach((l) => p.append("experienceLevels", l));
+  // params.levels.forEach((l) => p.append("experienceLevels", l));
   return p.toString();
 }
 
@@ -84,7 +61,7 @@ const ExperienceFeed = () => {
 
   const searchParams = useMemo(
     () => new URLSearchParams(location.search),
-    [location.search]
+    [location.search],
   );
 
   const [draftCompanies, setDraftCompanies] = useState([]);
@@ -114,7 +91,9 @@ const ExperienceFeed = () => {
         setExperiences(res.data);
       } catch (err) {
         console.error(err);
-        setError("We could not load the experience feed. Check your connection and try again.");
+        setError(
+          "We could not load the experience feed. Check your connection and try again.",
+        );
       } finally {
         setLoading(false);
       }
@@ -132,7 +111,7 @@ const ExperienceFeed = () => {
       });
       navigate(qs ? `/?${qs}` : "/");
     },
-    [draftCompanies, draftRoles, draftLevels, navigate]
+    [draftCompanies, draftRoles, draftLevels, navigate],
   );
 
   const clearFilters = useCallback(() => {
@@ -164,7 +143,9 @@ const ExperienceFeed = () => {
     searchParams.getAll("experienceLevels").length > 0;
 
   const hasDraftSelection =
-    draftCompanies.length > 0 || draftRoles.length > 0 || draftLevels.length > 0;
+    draftCompanies.length > 0 ||
+    draftRoles.length > 0 ||
+    draftLevels.length > 0;
 
   const checkboxClass =
     "h-3.5 w-3.5 shrink-0 rounded border-slate-500 accent-emerald-600 focus:ring-2 focus:ring-emerald-500/30";
@@ -175,15 +156,22 @@ const ExperienceFeed = () => {
     >
       <div className="mb-3 flex items-start justify-between gap-2">
         <div>
-          <h2 className={`text-sm font-bold uppercase tracking-wide ${headingPage(theme)}`}>
+          <h2
+            className={`text-sm font-bold uppercase tracking-wide ${headingPage(theme)}`}
+          >
             Filters
           </h2>
           <p className="mt-1.5 text-xs leading-snug text-slate-500">
-            Select companies, roles, and levels. Add custom names below the lists.
+            Select companies, roles, and levels. Add custom names below the
+            lists.
           </p>
         </div>
         {hasDraftSelection && (
-          <button type="button" onClick={clearFilters} className={`${linkButton} text-[11px]`}>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className={`${linkButton} text-[11px]`}
+          >
             Clear all
           </button>
         )}
@@ -195,10 +183,21 @@ const ExperienceFeed = () => {
             theme === "dark" ? "border-slate-700" : "border-slate-200"
           }`}
         >
-          <Button theme={theme} variant="primary" type="submit" className="w-full !py-2 !text-xs">
+          <Button
+            theme={theme}
+            variant="primary"
+            type="submit"
+            className="w-full !py-2 !text-xs"
+          >
             Apply filters
           </Button>
-          <Button theme={theme} variant="secondary" type="button" onClick={clearFilters} className="w-full !py-2 !text-xs">
+          <Button
+            theme={theme}
+            variant="secondary"
+            type="button"
+            onClick={clearFilters}
+            className="w-full !py-2 !text-xs"
+          >
             Reset
           </Button>
         </div>
@@ -216,7 +215,9 @@ const ExperienceFeed = () => {
                   type="checkbox"
                   className={checkboxClass}
                   checked={draftCompanies.includes(name)}
-                  onChange={() => setDraftCompanies((prev) => toggleInList(prev, name))}
+                  onChange={() =>
+                    setDraftCompanies((prev) => toggleInList(prev, name))
+                  }
                 />
                 {name}
               </label>
@@ -231,11 +232,18 @@ const ExperienceFeed = () => {
               className={`${inputCls(theme)} !py-2 text-sm`}
               aria-label="Custom company name"
             />
-            <Button theme={theme} variant="secondary" type="button" onClick={addCustomCompany} className="!px-3 !py-2 text-xs">
+            <Button
+              theme={theme}
+              variant="secondary"
+              type="button"
+              onClick={addCustomCompany}
+              className="!px-3 !py-2 text-xs"
+            >
               Add
             </Button>
           </div>
-          {draftCompanies.filter((c) => !PRESET_COMPANIES.includes(c)).length > 0 && (
+          {draftCompanies.filter((c) => !PRESET_COMPANIES.includes(c)).length >
+            0 && (
             <ul className="mt-2 flex flex-wrap gap-1.5">
               {draftCompanies
                 .filter((c) => !PRESET_COMPANIES.includes(c))
@@ -248,14 +256,16 @@ const ExperienceFeed = () => {
                         : "border-slate-200 bg-slate-100 text-slate-800"
                     }`}
                   >
-                    {c}
+                    {/* {c} */}
                     <button
                       type="button"
                       className="rounded p-0.5 hover:bg-slate-600/30"
-                      onClick={() => setDraftCompanies((prev) => prev.filter((x) => x !== c))}
-                      aria-label={`Remove ${c}`}
+                      onClick={() =>
+                        setDraftCompanies((prev) => prev.filter((x) => x !== c))
+                      }
+                      // aria-label={`Remove ${c}`}
                     >
-                      <HiX className="h-3.5 w-3.5" />
+                      {/* <HiX className="h-3.5 w-3.5" /> */}
                     </button>
                   </li>
                 ))}
@@ -276,7 +286,9 @@ const ExperienceFeed = () => {
                   type="checkbox"
                   className={checkboxClass}
                   checked={draftRoles.includes(name)}
-                  onChange={() => setDraftRoles((prev) => toggleInList(prev, name))}
+                  onChange={() =>
+                    setDraftRoles((prev) => toggleInList(prev, name))
+                  }
                 />
                 {name}
               </label>
@@ -291,7 +303,13 @@ const ExperienceFeed = () => {
               className={`${inputCls(theme)} !py-2 text-sm`}
               aria-label="Custom role"
             />
-            <Button theme={theme} variant="secondary" type="button" onClick={addCustomRole} className="!px-3 !py-2 text-xs">
+            <Button
+              theme={theme}
+              variant="secondary"
+              type="button"
+              onClick={addCustomRole}
+              className="!px-3 !py-2 text-xs"
+            >
               Add
             </Button>
           </div>
@@ -308,14 +326,16 @@ const ExperienceFeed = () => {
                         : "border-slate-200 bg-slate-100 text-slate-800"
                     }`}
                   >
-                    {r}
+                    {/* {r} */}
                     <button
                       type="button"
                       className="rounded p-0.5 hover:bg-slate-600/30"
-                      onClick={() => setDraftRoles((prev) => prev.filter((x) => x !== r))}
-                      aria-label={`Remove ${r}`}
+                      onClick={() =>
+                        setDraftRoles((prev) => prev.filter((x) => x !== r))
+                      }
+                      // aria-label={`Remove ${r}`}
                     >
-                      <HiX className="h-3.5 w-3.5" />
+                      {/* <HiX className="h-3.5 w-3.5" /> */}
                     </button>
                   </li>
                 ))}
@@ -323,7 +343,7 @@ const ExperienceFeed = () => {
           )}
         </FilterSection>
 
-        <FilterSection theme={theme} title="Experience level">
+        {/* <FilterSection theme={theme} title="Experience level">
           <div className="flex flex-col gap-1.5">
             {EXPERIENCE_LEVELS.map((lvl) => (
               <label
@@ -336,13 +356,15 @@ const ExperienceFeed = () => {
                   type="checkbox"
                   className={checkboxClass}
                   checked={draftLevels.includes(lvl)}
-                  onChange={() => setDraftLevels((prev) => toggleInList(prev, lvl))}
+                  onChange={() =>
+                    setDraftLevels((prev) => toggleInList(prev, lvl))
+                  }
                 />
                 {lvl}
               </label>
             ))}
           </div>
-        </FilterSection>
+        </FilterSection> */}
       </form>
     </aside>
   );
@@ -357,7 +379,9 @@ const ExperienceFeed = () => {
           Filter by company & role
         </span>
       </div>
-      <h1 className={`mt-4 text-xl font-bold tracking-tight sm:text-2xl ${headingPage(theme)}`}>
+      <h1
+        className={`mt-4 text-xl font-bold tracking-tight sm:text-2xl ${headingPage(theme)}`}
+      >
         Experience feed
       </h1>
       <p
@@ -365,8 +389,8 @@ const ExperienceFeed = () => {
           theme === "dark" ? "text-slate-300" : "text-slate-600"
         }`}
       >
-        Structured interview write-ups from candidates. Use the filters on the left to narrow by
-        company, role, and level.
+        Structured interview write-ups from candidates. Use the filters on the
+        left to narrow by company, role, and level.
       </p>
     </header>
   );
@@ -398,7 +422,11 @@ const ExperienceFeed = () => {
             >
               {error}
             </p>
-            <button type="button" onClick={() => window.location.reload()} className={`mt-6 ${linkButton}`}>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className={`mt-6 ${linkButton}`}
+            >
               Reload page
             </button>
           </div>
@@ -418,21 +446,29 @@ const ExperienceFeed = () => {
           {!experiences || experiences.length === 0 ? (
             <div className={`rounded-2xl p-6 text-center ${panelEmpty(theme)}`}>
               <p className={`text-base font-medium ${headingPage(theme)}`}>
-                {hasActiveUrlFilters ? "No experiences match these filters." : "The feed is empty for now."}
+                {hasActiveUrlFilters
+                  ? "No experiences match these filters."
+                  : "The feed is empty for now."}
               </p>
               <p className="mt-3 mx-auto max-w-md text-sm leading-relaxed text-slate-500">
                 {hasActiveUrlFilters
                   ? "Try removing a company or role, or add a custom filter that matches how people labeled their experience."
                   : "When candidates share experiences, they will appear here. Share yours to help others prepare."}
               </p>
-              <button type="button" onClick={() => navigate("/share")} className={`mt-6 ${linkButton}`}>
+              <button
+                type="button"
+                onClick={() => navigate("/share")}
+                className={`mt-6 ${linkButton}`}
+              >
                 Share an experience →
               </button>
             </div>
           ) : (
             <div className="flex flex-col gap-3">
               {loading && experiences.length > 0 && (
-                <p className="text-center text-sm text-slate-500">Updating results…</p>
+                <p className="text-center text-sm text-slate-500">
+                  Updating results…
+                </p>
               )}
               {experiences.map((exp) => (
                 <ExperienceCard
