@@ -1,5 +1,5 @@
 import React from "react";
-import { panel } from "../theme/ui";
+import { panel, accentBadge } from "../theme/ui";
 
 const FALLBACK_THUMB =
   "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=200&q=80&auto=format&fit=crop";
@@ -42,7 +42,7 @@ export default function ExperienceCard({
       }}
       className={`${panel(
         theme
-      )} rounded-lg p-3 cursor-pointer transition-colors hover:border-slate-500/60 ${
+      )} rounded-2xl p-3 cursor-pointer transition-colors hover:border-emerald-500/25 ${
         theme === "dark" ? "hover:bg-slate-900/80" : "hover:bg-slate-50/90"
       } ${className}`.trim()}
     >
@@ -86,17 +86,7 @@ export default function ExperienceCard({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {level && (
-              <span
-                className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${
-                  theme === "dark"
-                    ? "border-blue-500/30 bg-blue-950/50 text-blue-300"
-                    : "border-blue-200 bg-blue-50 text-blue-800"
-                }`}
-              >
-                {level}
-              </span>
-            )}
+            {level && <span className={accentBadge(theme)}>{level}</span>}
             {rounds && (
               <span
                 className={`text-xs font-medium ${
@@ -172,7 +162,7 @@ export default function ExperienceCard({
                 {exp.candidate || "Anonymous"}
               </span>
             </span>
-            <span className="tabular-nums font-medium text-blue-500">{helpfulCount} helpful</span>
+            <span className="tabular-nums font-medium text-emerald-500">{helpfulCount} helpful</span>
           </div>
         </div>
       </div>

@@ -1,23 +1,85 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { HiDocumentAdd, HiCheckCircle } from "react-icons/hi";
+import {
+  HiDocumentAdd,
+  HiCheckCircle,
+  HiInformationCircle,
+  HiVideoCamera,
+  HiViewList,
+  HiDocumentText,
+  HiShieldCheck,
+  HiPlus,
+  HiTrash,
+} from "react-icons/hi";
 import toast from "react-hot-toast";
 import { EXPERIENCES_API } from "../config/api";
 import { Button } from "../components/ui/Button";
 import {
   pageBg,
   panel,
+  panelMuted,
   labelCls,
   inputCls,
   selectCls,
   textareaCls,
   headingPage,
-  subheading,
 } from "../theme/ui";
 import { useTheme } from "../context/ThemeContext";
 
 const LEVELS = ["Intern", "SDE1", "SDE2", "SDE3", "Senior", "Staff", "Other"];
+
+const emptyRound = () => ({
+  name: "",
+  questionsText: "",
+  notes: "",
+  preparationTips: "",
+});
+
+function questionLinesTotal(rounds) {
+  return rounds.flatMap((r) =>
+    String(r.questionsText || "")
+      .split(/\r?\n/)
+      .map((s) => s.trim())
+      .filter(Boolean),
+  );
+}
+
+function publishErrorMessage(error) {
+  const data = error.response?.data;
+  if (typeof data === "string") {
+    if (/<!DOCTYPE|<html|<title>Error|<pre>Internal Server Error/i.test(data)) {
+      return "Server error while publishing. If you attached a video, ensure the API has Cloudinary env vars set.";
+    }
+    return data.length > 400 ? "Could not publish your experience. Try again." : data;
+  }
+  if (data && typeof data === "object") {
+    return (
+      data.error ||
+      data.message ||
+      error.message ||
+      "Could not publish your experience. Try again."
+    );
+  }
+  return error.message || "Could not publish your experience. Try again.";
+}
+
+function FormSection({ theme, icon: Icon, title, children }) {
+  const border = theme === "dark" ? "border-slate-700" : "border-slate-200";
+  return (
+    <section
+      className={`rounded-2xl p-6 sm:p-8 space-y-6 ${panelMuted(theme)}`}
+    >
+      <div className={`flex items-center gap-3 border-b pb-4 ${border}`}>
+        {Icon ? (
+          <Icon className="h-6 w-6 shrink-0 text-emerald-500" aria-hidden />
+        ) : null}
+        <h2 className={`text-lg font-bold ${headingPage(theme)}`}>{title}</h2>
+      </div>
+      {children}
+    </section>
+  );
+}
 
 const ShareExperiencePage = () => {
   const { theme } = useTheme();
@@ -27,21 +89,33 @@ const ShareExperiencePage = () => {
   const [company, setCompany] = useState("");
   const [role, setRole] = useState("");
   const [experienceLevel, setExperienceLevel] = useState("SDE1");
-  const [interviewRounds, setInterviewRounds] = useState("3");
+  const [rounds, setRounds] = useState([emptyRound()]);
   const [detailsNotes, setDetailsNotes] = useState("");
-  const [detailsNoteImages, setDetailsNoteImages] = useState([]);
-  const [questionsText, setQuestionsText] = useState("");
   const [questionsNotes, setQuestionsNotes] = useState("");
-  const [questionsNoteImages, setQuestionsNoteImages] = useState([]);
   const [tips, setTips] = useState("");
   const [tipsNotes, setTipsNotes] = useState("");
-  const [howToPrepare, setHowToPrepare] = useState("");
   const [outcome, setOutcome] = useState("");
   const [visibility, setVisibility] = useState("public");
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const user = JSON.parse(localStorage.getItem("user") || "null");
   const userId = user?.id ?? user?._id;
+
+  const updateRound = (index, patch) => {
+    setRounds((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], ...patch };
+      return next;
+    });
+  };
+
+  const addRound = () => setRounds((prev) => [...prev, emptyRound()]);
+
+  const removeRound = (index) => {
+    setRounds((prev) =>
+      prev.length <= 1 ? prev : prev.filter((_, i) => i !== index),
+    );
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,79 +124,149 @@ const ShareExperiencePage = () => {
       return;
     }
 
-    const lines = questionsText
-      .split(/\r?\n/)
-      .map((s) => s.trim())
-      .filter(Boolean);
-    if (!lines.length) {
-      toast.error("Add at least one question you were asked (one per line).");
+    const forSubmit = rounds.map((r) => ({
+      name: r.name.trim(),
+      questionsText: r.questionsText.trim(),
+      notes: r.notes.trim(),
+      preparationTips: r.preparationTips.trim(),
+    }));
+
+    const questionLines = questionLinesTotal(forSubmit);
+    if (!questionLines.length) {
+      toast.error(
+        "Add at least one question across your interview rounds (one per line).",
+      );
       return;
     }
 
     setUploading(true);
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("description", description);
-    if (file) formData.append("video", file);
-    formData.append("candidate", user.name || "Anonymous");
-    if (userId) formData.append("candidateId", userId);
-    formData.append("visibility", visibility);
-    formData.append("company", company);
-    formData.append("role", role);
-    formData.append("experienceLevel", experienceLevel);
-    formData.append("interviewRounds", interviewRounds);
-    if (detailsNotes) formData.append("detailsNotes", detailsNotes);
-    detailsNoteImages.forEach((img) => formData.append("detailsNotesImages", img));
-    formData.append("questions", JSON.stringify(lines));
-    if (questionsNotes) formData.append("questionsNotes", questionsNotes);
-    questionsNoteImages.forEach((img) => formData.append("questionsNotesImages", img));
-    formData.append("tips", tips);
-    if (tipsNotes) formData.append("tipsNotes", tipsNotes);
-    if (howToPrepare) formData.append("howToPrepare", howToPrepare);
-    if (outcome) formData.append("outcome", outcome);
+
+    const jsonBody = {
+      title,
+      description,
+      candidate: user.name || "Anonymous",
+      visibility,
+      company,
+      role,
+      experienceLevel,
+      interviewRoundDetails: forSubmit,
+      structuredRounds: true,
+      questions: questionLines,
+      interviewRounds: forSubmit.length,
+      tips,
+    };
+    if (userId) jsonBody.candidateId = userId;
+    if (detailsNotes) jsonBody.detailsNotes = detailsNotes;
+    if (questionsNotes) jsonBody.questionsNotes = questionsNotes;
+    if (tipsNotes) jsonBody.tipsNotes = tipsNotes;
+    if (outcome) jsonBody.outcome = outcome;
 
     try {
-      await axios.post(`${EXPERIENCES_API}/upload`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      toast.success("Your experience was published.");
-      navigate("/");
+      const res = await axios.post(`${EXPERIENCES_API}`, jsonBody);
+      const newId = res.data?._id;
+      let videoUploadFailed = false;
+
+      if (file && newId) {
+        const videoForm = new FormData();
+        videoForm.append("video", file);
+        try {
+          await axios.post(`${EXPERIENCES_API}/${newId}/attach-video`, videoForm);
+        } catch (videoErr) {
+          console.error(videoErr);
+          videoUploadFailed = true;
+          toast.error(
+            publishErrorMessage(videoErr) ||
+              "Experience saved, but the video could not be uploaded.",
+          );
+        }
+      }
+
+      if (!videoUploadFailed) {
+        toast.success("Your experience was published.");
+      }
+      if (newId) {
+        navigate(`/experience/${newId}`);
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       console.error(error);
-      const msg =
-        error.response?.data?.error || "Could not publish your experience. Try again.";
-      toast.error(msg);
+      toast.error(publishErrorMessage(error));
     } finally {
       setUploading(false);
     }
   };
 
-  return (
-    <div className={`min-h-screen pt-[4.75rem] pb-10 px-3 sm:px-5 ${pageBg(theme)}`}>
-      <div className="mx-auto max-w-xl">
-        <div className={`rounded-lg p-5 sm:p-6 ${panel(theme)}`}>
-          <div className="mb-5 flex gap-3">
-            <div
-              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${
-                theme === "dark"
-                  ? "border-blue-500/30 bg-blue-950/40 text-blue-400"
-                  : "border-blue-200 bg-blue-50 text-blue-700"
-              }`}
-            >
-              <HiDocumentAdd className="h-5 w-5" />
-            </div>
-            <div>
-              <h1 className={`text-xl font-semibold tracking-tight ${headingPage(theme)}`}>
-                Share experience
-              </h1>
-              <p className={`mt-0.5 max-w-lg text-sm ${subheading}`}>
-                Add structured notes plus a short recording so others can learn from your interview
-                loop.
-              </p>
-            </div>
-          </div>
+  const mutedText = theme === "dark" ? "text-slate-300" : "text-slate-600";
+  const sectionIconButton =
+    theme === "dark"
+      ? "text-red-400 hover:bg-red-950/40"
+      : "text-red-600 hover:bg-red-50";
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+  const visibilityCard = (value, vtitle, vsubtitle, IconComp, selected) => {
+    const ringSelected =
+      theme === "dark"
+        ? "border-emerald-500/60 bg-emerald-950/25"
+        : "border-emerald-500/50 bg-emerald-50/60";
+    const ringIdle =
+      theme === "dark"
+        ? "border-slate-700 bg-slate-900/40 hover:border-slate-600"
+        : "border-slate-200 bg-white hover:border-slate-300";
+
+    return (
+      <label
+        className={`relative flex cursor-pointer items-start gap-3 rounded-xl border-2 p-4 transition-colors ${
+          selected ? ringSelected : ringIdle
+        }`}
+      >
+        <input
+          type="radio"
+          name="visibility"
+          value={value}
+          checked={visibility === value}
+          onChange={() => setVisibility(value)}
+          className="sr-only"
+        />
+        <IconComp
+          className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500"
+          aria-hidden
+        />
+        <div>
+          <div className={`font-semibold ${headingPage(theme)}`}>{vtitle}</div>
+          <p className={`mt-0.5 text-xs ${mutedText}`}>{vsubtitle}</p>
+        </div>
+      </label>
+    );
+  };
+
+  return (
+    <div className={`min-h-screen pt-20 pb-16 px-4 sm:px-8 ${pageBg(theme)}`}>
+      <div className="mx-auto max-w-5xl space-y-10">
+        <header className="flex gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/25">
+            <HiDocumentAdd className="h-5 w-5" />
+          </div>
+          <div>
+            <h1
+              className={`text-2xl font-bold tracking-tight sm:text-3xl ${headingPage(theme)}`}
+            >
+              Share experience
+            </h1>
+            <p
+              className={`mt-2 max-w-2xl text-sm leading-relaxed ${mutedText}`}
+            >
+              Capture each round—questions, notes, and prep—plus overall tips
+              for others.
+            </p>
+          </div>
+        </header>
+
+        <form onSubmit={handleSubmit} className="space-y-10">
+          <FormSection
+            theme={theme}
+            icon={HiInformationCircle}
+            title="Basic information"
+          >
             <div>
               <label className={labelCls} htmlFor="se-title">
                 Title
@@ -138,7 +282,7 @@ const ShareExperiencePage = () => {
               />
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
                 <label className={labelCls} htmlFor="se-company">
                   Company
@@ -168,297 +312,336 @@ const ShareExperiencePage = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label className={labelCls} htmlFor="se-level">
-                  Experience level
-                </label>
-                <select
-                  id="se-level"
-                  value={experienceLevel}
-                  onChange={(e) => setExperienceLevel(e.target.value)}
-                  required
-                  className={selectCls(theme)}
-                >
-                  {LEVELS.map((l) => (
-                    <option key={l} value={l}>
-                      {l}
-                    </option>
-                  ))}
-                </select>
+            <div>
+              <label className={labelCls} htmlFor="se-level">
+                Experience level
+              </label>
+              <select
+                id="se-level"
+                value={experienceLevel}
+                onChange={(e) => setExperienceLevel(e.target.value)}
+                required
+                className={selectCls(theme)}
+              >
+                {LEVELS.map((l) => (
+                  <option key={l} value={l}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <span className={labelCls}>Visibility</span>
+              <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {visibilityCard(
+                  "public",
+                  "Public",
+                  "Shown on the experience feed for all visitors.",
+                  HiInformationCircle,
+                  visibility === "public",
+                )}
+                {visibilityCard(
+                  "private",
+                  "Private",
+                  "Only you can open it from My experiences.",
+                  HiShieldCheck,
+                  visibility === "private",
+                )}
               </div>
-              <div>
-                <label className={labelCls} htmlFor="se-rounds">
+            </div>
+          </FormSection>
+
+          <FormSection
+            theme={theme}
+            icon={HiVideoCamera}
+            title="Video (optional)"
+          >
+            <p className={`text-sm ${mutedText}`}>
+              MP4, MOV, or similar — a walkthrough of your interview experience.
+            </p>
+            <input
+              type="file"
+              accept="video/*"
+              id="file-upload"
+              className="hidden"
+              onChange={(e) => setFile(e.target.files[0])}
+            />
+            <label
+              htmlFor="file-upload"
+              className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed py-10 px-4 text-center text-sm transition-colors ${
+                theme === "dark"
+                  ? "border-slate-600 bg-slate-900/30 hover:border-emerald-500/40 hover:bg-slate-800/40"
+                  : "border-slate-300 bg-white hover:border-emerald-400 hover:bg-slate-50/80"
+              }`}
+            >
+              {file ? (
+                <>
+                  <HiCheckCircle className="text-emerald-500 h-8 w-8 shrink-0" />
+                  <span
+                    className={
+                      theme === "dark" ? "text-slate-300" : "text-slate-700"
+                    }
+                  >
+                    {file.name}
+                  </span>
+                </>
+              ) : (
+                <span className="text-slate-500">Choose recording file…</span>
+              )}
+            </label>
+          </FormSection>
+
+          <section className="space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <HiViewList
+                  className="h-6 w-6 shrink-0 text-emerald-500"
+                  aria-hidden
+                />
+                <h2 className={`text-lg font-bold ${headingPage(theme)}`}>
                   Interview rounds
-                </label>
-                <input
-                  id="se-rounds"
-                  type="number"
-                  min={0}
-                  value={interviewRounds}
-                  onChange={(e) => setInterviewRounds(e.target.value)}
-                  required
-                  className={inputCls(theme)}
-                />
+                </h2>
               </div>
+              <button
+                type="button"
+                onClick={addRound}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
+              >
+                <HiPlus className="h-4 w-4" />
+                Add round
+              </button>
             </div>
 
-            <div>
-              <label className={labelCls} htmlFor="se-details-notes">
-                Interview details notes (optional)
-              </label>
-              <textarea
-                id="se-details-notes"
-                placeholder="Anything to add about rounds, format, recruiter screen, take-home, etc."
-                rows={3}
-                value={detailsNotes}
-                onChange={(e) => setDetailsNotes(e.target.value)}
-                className={textareaCls(theme)}
-              />
-              <div className="mt-2">
-                <label className={`${labelCls} !text-[10px]`} htmlFor="se-details-notes-images">
-                  Attach images (optional)
-                </label>
-                <input
-                  id="se-details-notes-images"
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className={inputCls(theme)}
-                  onChange={(e) => {
-                    const files = Array.from(e.target.files || []);
-                    if (files.length) setDetailsNoteImages((prev) => [...prev, ...files]);
-                    e.target.value = "";
-                  }}
-                />
-                {detailsNoteImages.length ? (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {detailsNoteImages.map((f, idx) => (
-                      <div
-                        key={`${f.name}-${idx}`}
-                        className={`flex items-center gap-2 rounded-md border px-2 py-1 text-xs ${
-                          theme === "dark"
-                            ? "border-slate-700 bg-slate-900/40 text-slate-200"
-                            : "border-slate-200 bg-slate-50 text-slate-700"
-                        }`}
-                      >
-                        <span className="max-w-[180px] truncate">{f.name}</span>
-                        <button
-                          type="button"
-                          className="text-slate-500 hover:text-red-500"
-                          onClick={() =>
-                            setDetailsNoteImages((prev) => prev.filter((_, i) => i !== idx))
-                          }
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-
-            <div>
-              <label className={labelCls} htmlFor="se-questions">
-                Questions (one per line)
-              </label>
-              <textarea
-                id="se-questions"
-                placeholder="Paste or type each question on its own line."
-                rows={5}
-                value={questionsText}
-                onChange={(e) => setQuestionsText(e.target.value)}
-                className={textareaCls(theme)}
-              />
-            </div>
-
-            <div>
-              <label className={labelCls} htmlFor="se-questions-notes">
-                Questions notes (optional)
-              </label>
-              <textarea
-                id="se-questions-notes"
-                placeholder="Context around the questions: difficulty, follow-ups, constraints, or focus areas."
-                rows={3}
-                value={questionsNotes}
-                onChange={(e) => setQuestionsNotes(e.target.value)}
-                className={textareaCls(theme)}
-              />
-              <div className="mt-2">
-                <label className={`${labelCls} !text-[10px]`} htmlFor="se-questions-notes-images">
-                  Attach images (optional)
-                </label>
-                <input
-                  id="se-questions-notes-images"
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className={inputCls(theme)}
-                  onChange={(e) => {
-                    const files = Array.from(e.target.files || []);
-                    if (files.length) setQuestionsNoteImages((prev) => [...prev, ...files]);
-                    e.target.value = "";
-                  }}
-                />
-                {questionsNoteImages.length ? (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {questionsNoteImages.map((f, idx) => (
-                      <div
-                        key={`${f.name}-${idx}`}
-                        className={`flex items-center gap-2 rounded-md border px-2 py-1 text-xs ${
-                          theme === "dark"
-                            ? "border-slate-700 bg-slate-900/40 text-slate-200"
-                            : "border-slate-200 bg-slate-50 text-slate-700"
-                        }`}
-                      >
-                        <span className="max-w-[180px] truncate">{f.name}</span>
-                        <button
-                          type="button"
-                          className="text-slate-500 hover:text-red-500"
-                          onClick={() =>
-                            setQuestionsNoteImages((prev) => prev.filter((_, i) => i !== idx))
-                          }
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-
-            <div>
-              <label className={labelCls} htmlFor="se-tips">
-                Tips for others
-              </label>
-              <textarea
-                id="se-tips"
-                placeholder="What would you repeat, or do differently?"
-                rows={3}
-                value={tips}
-                onChange={(e) => setTips(e.target.value)}
-                className={textareaCls(theme)}
-              />
-            </div>
-
-            <div>
-              <label className={labelCls} htmlFor="se-tips-notes">
-                Tips notes (optional)
-              </label>
-              <textarea
-                id="se-tips-notes"
-                placeholder="Add extra notes, resources, links, or what you wish you knew."
-                rows={3}
-                value={tipsNotes}
-                onChange={(e) => setTipsNotes(e.target.value)}
-                className={textareaCls(theme)}
-              />
-            </div>
-
-            <div>
-              <label className={labelCls} htmlFor="se-how-to-prepare">
-                How to prepare (optional)
-              </label>
-              <textarea
-                id="se-how-to-prepare"
-                placeholder="Share a prep plan: topics, practice, resources, timeline, and what mattered most."
-                rows={4}
-                value={howToPrepare}
-                onChange={(e) => setHowToPrepare(e.target.value)}
-                className={textareaCls(theme)}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label className={labelCls} htmlFor="se-outcome">
-                  Outcome (optional)
-                </label>
-                <select
-                  id="se-outcome"
-                  value={outcome}
-                  onChange={(e) => setOutcome(e.target.value)}
-                  className={selectCls(theme)}
+            <div className="space-y-6">
+              {rounds.map((r, index) => (
+                <div
+                  key={index}
+                  className={`overflow-hidden rounded-2xl ${panel(theme)}`}
                 >
-                  <option value="">Prefer not to say</option>
-                  <option value="selected">Selected</option>
-                  <option value="rejected">Not selected</option>
-                </select>
-              </div>
-              <div>
-                <label className={labelCls} htmlFor="se-visibility">
-                  Visibility
-                </label>
-                <select
-                  id="se-visibility"
-                  value={visibility}
-                  onChange={(e) => setVisibility(e.target.value)}
-                  className={selectCls(theme)}
-                >
-                  <option value="public">Public — on the experience feed</option>
-                  <option value="private">Private — only in My experiences</option>
-                </select>
-              </div>
+                  <div
+                    className={`flex items-center justify-between px-5 py-3 ${
+                      theme === "dark"
+                        ? "bg-emerald-950/30"
+                        : "bg-emerald-50/80"
+                    }`}
+                  >
+                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                      Round {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={rounds.length <= 1}
+                      onClick={() => removeRound(index)}
+                      className={`rounded-lg p-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${sectionIconButton}`}
+                      aria-label="Remove round"
+                    >
+                      <HiTrash className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="space-y-5 p-5 sm:p-6">
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+                      <div className="md:col-span-1">
+                        <label
+                          className={labelCls}
+                          htmlFor={`se-round-name-${index}`}
+                        >
+                          Round name
+                        </label>
+                        <input
+                          id={`se-round-name-${index}`}
+                          type="text"
+                          placeholder="e.g. Technical screening"
+                          className={inputCls(theme)}
+                          value={r.name}
+                          onChange={(e) =>
+                            updateRound(index, { name: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label
+                          className={labelCls}
+                          htmlFor={`se-round-questions-${index}`}
+                        >
+                          Questions asked (one per line)
+                        </label>
+                        <textarea
+                          id={`se-round-questions-${index}`}
+                          placeholder="Paste or type each question on its own line."
+                          rows={3}
+                          className={textareaCls(theme)}
+                          value={r.questionsText}
+                          onChange={(e) =>
+                            updateRound(index, {
+                              questionsText: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label
+                        className={labelCls}
+                        htmlFor={`se-round-notes-${index}`}
+                      >
+                        Notes &amp; strategies (optional)
+                      </label>
+                      <textarea
+                        id={`se-round-notes-${index}`}
+                        placeholder="What worked? What was the interviewer looking for?"
+                        rows={3}
+                        className={textareaCls(theme)}
+                        value={r.notes}
+                        onChange={(e) =>
+                          updateRound(index, { notes: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <label
+                        className={labelCls}
+                        htmlFor={`se-round-prep-${index}`}
+                      >
+                        Preparation tips (optional)
+                      </label>
+                      <textarea
+                        id={`se-round-prep-${index}`}
+                        placeholder="How to prepare specifically for this round (topics, format, timebox)."
+                        rows={3}
+                        className={textareaCls(theme)}
+                        value={r.preparationTips}
+                        onChange={(e) =>
+                          updateRound(index, {
+                            preparationTips: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
+          </section>
 
+          <FormSection
+            theme={theme}
+            icon={HiDocumentText}
+            title="Overall summary"
+          >
+            <p className={`text-sm ${mutedText}`}>
+              High-level context: team, timeline, culture, or what stood out
+              about the process.
+            </p>
             <div>
               <label className={labelCls} htmlFor="se-summary">
                 Summary
               </label>
               <textarea
                 id="se-summary"
-                placeholder="Brief context: team, timeline, or what stood out."
-                rows={3}
+                placeholder="Brief overview for readers skimming your experience."
+                rows={5}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 required
                 className={textareaCls(theme)}
               />
             </div>
+          </FormSection>
 
+          <FormSection theme={theme} title="Other notes (optional)">
             <div>
-              <span className={labelCls}>Recording file</span>
-              <p className="mb-2 text-xs text-slate-500">
-                Optional. MP4, MOV, or similar — walkthrough of your interview experience.
-              </p>
-              <input
-                type="file"
-                accept="video/*"
-                id="file-upload"
-                className="hidden"
-                onChange={(e) => setFile(e.target.files[0])}
-              />
-              <label
-                htmlFor="file-upload"
-                className={`flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed py-4 px-4 text-sm transition-colors ${
-                  theme === "dark"
-                    ? "border-slate-600 hover:border-blue-500/50 hover:bg-slate-800/50"
-                    : "border-slate-300 hover:border-blue-400 hover:bg-slate-50"
-                }`}
-              >
-                {file ? (
-                  <>
-                    <HiCheckCircle className="text-emerald-500 shrink-0" />
-                    <span
-                      className={`truncate ${theme === "dark" ? "text-slate-300" : "text-slate-600"}`}
-                    >
-                      {file.name}
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-slate-500">Choose recording file…</span>
-                )}
+              <label className={labelCls} htmlFor="se-details-notes">
+                Interview details
               </label>
+              <textarea
+                id="se-details-notes"
+                placeholder="Recruiter screen, take-home, format, scheduling — anything not tied to a single round."
+                rows={3}
+                value={detailsNotes}
+                onChange={(e) => setDetailsNotes(e.target.value)}
+                className={textareaCls(theme)}
+              />
             </div>
 
+            <div>
+              <label className={labelCls} htmlFor="se-questions-notes">
+                Extra context on questions (optional)
+              </label>
+              <textarea
+                id="se-questions-notes"
+                placeholder="Difficulty, follow-ups, or themes across rounds."
+                rows={3}
+                value={questionsNotes}
+                onChange={(e) => setQuestionsNotes(e.target.value)}
+                className={textareaCls(theme)}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <div>
+                <label className={labelCls} htmlFor="se-tips">
+                  Tips
+                </label>
+                <textarea
+                  id="se-tips"
+                  placeholder="What would you repeat, or do differently?"
+                  rows={4}
+                  value={tips}
+                  onChange={(e) => setTips(e.target.value)}
+                  className={textareaCls(theme)}
+                />
+              </div>
+              <div>
+                <label className={labelCls} htmlFor="se-tips-notes">
+                  Tips notes (optional)
+                </label>
+                <textarea
+                  id="se-tips-notes"
+                  placeholder="Links, resources, or what you wish you knew."
+                  rows={4}
+                  value={tipsNotes}
+                  onChange={(e) => setTipsNotes(e.target.value)}
+                  className={textareaCls(theme)}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className={labelCls} htmlFor="se-outcome">
+                Outcome (optional)
+              </label>
+              <select
+                id="se-outcome"
+                value={outcome}
+                onChange={(e) => setOutcome(e.target.value)}
+                className={selectCls(theme)}
+              >
+                <option value="">Prefer not to say</option>
+                <option value="selected">Selected</option>
+                <option value="rejected">Not selected</option>
+              </select>
+            </div>
+          </FormSection>
+
+          <div
+            className={`flex flex-col-reverse items-stretch justify-end gap-3 border-t pt-8 sm:flex-row sm:items-center ${theme === "dark" ? "border-slate-800" : "border-slate-200"}`}
+          >
+            <Button
+              theme={theme}
+              variant="secondary"
+              type="button"
+              className="w-full sm:w-auto"
+              onClick={() => navigate(-1)}
+            >
+              Cancel
+            </Button>
             <Button
               theme={theme}
               variant="primary"
               type="submit"
               disabled={uploading}
-              className="w-full"
+              className="w-full sm:w-auto sm:min-w-[200px]"
             >
               {uploading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -469,8 +652,8 @@ const ShareExperiencePage = () => {
                 "Publish experience"
               )}
             </Button>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </div>
   );

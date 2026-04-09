@@ -1,2 +1,12 @@
 node_modules/
 .env
+
+# Tooling / IDE
+.cursor/
+
+# Production build (regenerate with npm run build)
+frontend/build/
+
+# Caches
+**/.eslintcache
+frontend/node_modules/.cache/

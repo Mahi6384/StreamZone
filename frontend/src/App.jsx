@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ShareExperiencePage from "./pages/ShareExperiencePage";
 import MyExperiences from "./pages/MyExperiences";
+import About from "./pages/About";
 import ExperienceDetail from "./components/ExperienceDetail";
 import ThemedToaster from "./components/ThemedToaster";
 import Navbar from "./components/Navbar";
@@ -24,6 +25,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
           <Route path="/share" element={<ShareExperiencePage />} />
           <Route path="/upload" element={<Navigate to="/share" replace />} />
           <Route path="/experience/:id" element={<ExperienceDetail />} />

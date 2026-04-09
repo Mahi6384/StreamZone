@@ -12,38 +12,14 @@ import {
   labelCls,
   inputCls,
   headingPage,
-  subheading,
   linkButton,
 } from "../theme/ui";
 import { useTheme } from "../context/ThemeContext";
 
-const EXPERIENCE_LEVELS = ["Intern", "SDE1", "SDE2", "SDE3", "Senior", "Staff", "Other"];
-
-const PRESET_COMPANIES = [
-  "Google",
-  "Meta",
-  "Amazon",
-  "Microsoft",
-  "Apple",
-  "Netflix",
-  "Stripe",
-  "Uber",
-  "Airbnb",
-  "LinkedIn",
-  "Adobe",
-  "Oracle",
-];
+const PRESET_COMPANIES = ["Google", "Uber", "LinkedIn", "Adobe", "Oracle"];
 
 const PRESET_ROLES = [
   "Software Engineer",
-  "Backend Engineer",
-  "Frontend Engineer",
-  "Full Stack Engineer",
-  "ML Engineer",
-  "Data Engineer",
-  "DevOps Engineer",
-  "SRE",
-  "Mobile Engineer",
   "Product Engineer",
   "Security Engineer",
   "Engineering Manager",
@@ -58,7 +34,7 @@ function buildFilterQuery(params) {
   const p = new URLSearchParams();
   params.companies.forEach((c) => p.append("companies", c));
   params.roles.forEach((r) => p.append("roles", r));
-  params.levels.forEach((l) => p.append("experienceLevels", l));
+  // params.levels.forEach((l) => p.append("experienceLevels", l));
   return p.toString();
 }
 
@@ -69,7 +45,7 @@ function FilterSection({ theme, title, children }) {
         theme === "dark" ? "border-slate-700" : "border-slate-200"
       }`}
     >
-      <h3 className={`${labelCls} mb-2 !text-[10px]`}>{title}</h3>
+      <h3 className={`${labelCls} mb-2 !text-[11px]`}>{title}</h3>
       {children}
     </div>
   );
@@ -85,7 +61,7 @@ const ExperienceFeed = () => {
 
   const searchParams = useMemo(
     () => new URLSearchParams(location.search),
-    [location.search]
+    [location.search],
   );
 
   const [draftCompanies, setDraftCompanies] = useState([]);
@@ -115,7 +91,9 @@ const ExperienceFeed = () => {
         setExperiences(res.data);
       } catch (err) {
         console.error(err);
-        setError("We could not load the experience feed. Check your connection and try again.");
+        setError(
+          "We could not load the experience feed. Check your connection and try again.",
+        );
       } finally {
         setLoading(false);
       }
@@ -133,7 +111,7 @@ const ExperienceFeed = () => {
       });
       navigate(qs ? `/?${qs}` : "/");
     },
-    [draftCompanies, draftRoles, draftLevels, navigate]
+    [draftCompanies, draftRoles, draftLevels, navigate],
   );
 
   const clearFilters = useCallback(() => {
@@ -165,28 +143,35 @@ const ExperienceFeed = () => {
     searchParams.getAll("experienceLevels").length > 0;
 
   const hasDraftSelection =
-    draftCompanies.length > 0 || draftRoles.length > 0 || draftLevels.length > 0;
+    draftCompanies.length > 0 ||
+    draftRoles.length > 0 ||
+    draftLevels.length > 0;
 
   const checkboxClass =
-    "h-3.5 w-3.5 shrink-0 rounded border-slate-500 accent-blue-600 focus:ring-2 focus:ring-blue-500/30";
+    "h-3.5 w-3.5 shrink-0 rounded border-slate-500 accent-emerald-600 focus:ring-2 focus:ring-emerald-500/30";
 
   const sidebar = (
     <aside
-      className={`w-full shrink-0 lg:w-60 xl:w-64 lg:sticky lg:top-[4.25rem] lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto ${panel(
-        theme
-      )} rounded-lg p-3 sm:p-4 text-[13px]`}
+      className={`w-full shrink-0 lg:w-72 xl:w-80 ${panel(theme)} rounded-2xl p-4 sm:p-5 text-[13px]`}
     >
       <div className="mb-3 flex items-start justify-between gap-2">
         <div>
-          <h2 className={`text-xs font-semibold uppercase tracking-wide ${headingPage(theme)}`}>
+          <h2
+            className={`text-sm font-bold uppercase tracking-wide ${headingPage(theme)}`}
+          >
             Filters
           </h2>
-          <p className="mt-1 text-[11px] leading-snug text-slate-500">
-            Select companies, roles, and levels. Add custom names below the lists.
+          <p className="mt-1.5 text-xs leading-snug text-slate-500">
+            Select companies, roles, and levels. Add custom names below the
+            lists.
           </p>
         </div>
         {hasDraftSelection && (
-          <button type="button" onClick={clearFilters} className={`${linkButton} text-[11px]`}>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className={`${linkButton} text-[11px]`}
+          >
             Clear all
           </button>
         )}
@@ -198,16 +183,27 @@ const ExperienceFeed = () => {
             theme === "dark" ? "border-slate-700" : "border-slate-200"
           }`}
         >
-          <Button theme={theme} variant="primary" type="submit" className="w-full !py-2 !text-xs">
+          <Button
+            theme={theme}
+            variant="primary"
+            type="submit"
+            className="w-full !py-2 !text-xs"
+          >
             Apply filters
           </Button>
-          <Button theme={theme} variant="secondary" type="button" onClick={clearFilters} className="w-full !py-2 !text-xs">
+          <Button
+            theme={theme}
+            variant="secondary"
+            type="button"
+            onClick={clearFilters}
+            className="w-full !py-2 !text-xs"
+          >
             Reset
           </Button>
         </div>
 
         <FilterSection theme={theme} title="Companies">
-          <div className="mb-2 flex max-h-32 flex-col gap-1.5 overflow-y-auto pr-1">
+          <div className="mb-2 flex flex-col gap-1.5">
             {PRESET_COMPANIES.map((name) => (
               <label
                 key={name}
@@ -219,7 +215,9 @@ const ExperienceFeed = () => {
                   type="checkbox"
                   className={checkboxClass}
                   checked={draftCompanies.includes(name)}
-                  onChange={() => setDraftCompanies((prev) => toggleInList(prev, name))}
+                  onChange={() =>
+                    setDraftCompanies((prev) => toggleInList(prev, name))
+                  }
                 />
                 {name}
               </label>
@@ -234,11 +232,18 @@ const ExperienceFeed = () => {
               className={`${inputCls(theme)} !py-2 text-sm`}
               aria-label="Custom company name"
             />
-            <Button theme={theme} variant="secondary" type="button" onClick={addCustomCompany} className="!px-3 !py-2 text-xs">
+            <Button
+              theme={theme}
+              variant="secondary"
+              type="button"
+              onClick={addCustomCompany}
+              className="!px-3 !py-2 text-xs"
+            >
               Add
             </Button>
           </div>
-          {draftCompanies.filter((c) => !PRESET_COMPANIES.includes(c)).length > 0 && (
+          {draftCompanies.filter((c) => !PRESET_COMPANIES.includes(c)).length >
+            0 && (
             <ul className="mt-2 flex flex-wrap gap-1.5">
               {draftCompanies
                 .filter((c) => !PRESET_COMPANIES.includes(c))
@@ -251,11 +256,13 @@ const ExperienceFeed = () => {
                         : "border-slate-200 bg-slate-100 text-slate-800"
                     }`}
                   >
-                    {c}
+                    <span>{c}</span>
                     <button
                       type="button"
                       className="rounded p-0.5 hover:bg-slate-600/30"
-                      onClick={() => setDraftCompanies((prev) => prev.filter((x) => x !== c))}
+                      onClick={() =>
+                        setDraftCompanies((prev) => prev.filter((x) => x !== c))
+                      }
                       aria-label={`Remove ${c}`}
                     >
                       <HiX className="h-3.5 w-3.5" />
@@ -267,7 +274,7 @@ const ExperienceFeed = () => {
         </FilterSection>
 
         <FilterSection theme={theme} title="Roles">
-          <div className="mb-2 flex max-h-32 flex-col gap-1.5 overflow-y-auto pr-1">
+          <div className="mb-2 flex flex-col gap-1.5">
             {PRESET_ROLES.map((name) => (
               <label
                 key={name}
@@ -279,7 +286,9 @@ const ExperienceFeed = () => {
                   type="checkbox"
                   className={checkboxClass}
                   checked={draftRoles.includes(name)}
-                  onChange={() => setDraftRoles((prev) => toggleInList(prev, name))}
+                  onChange={() =>
+                    setDraftRoles((prev) => toggleInList(prev, name))
+                  }
                 />
                 {name}
               </label>
@@ -294,7 +303,13 @@ const ExperienceFeed = () => {
               className={`${inputCls(theme)} !py-2 text-sm`}
               aria-label="Custom role"
             />
-            <Button theme={theme} variant="secondary" type="button" onClick={addCustomRole} className="!px-3 !py-2 text-xs">
+            <Button
+              theme={theme}
+              variant="secondary"
+              type="button"
+              onClick={addCustomRole}
+              className="!px-3 !py-2 text-xs"
+            >
               Add
             </Button>
           </div>
@@ -311,11 +326,13 @@ const ExperienceFeed = () => {
                         : "border-slate-200 bg-slate-100 text-slate-800"
                     }`}
                   >
-                    {r}
+                    <span>{r}</span>
                     <button
                       type="button"
                       className="rounded p-0.5 hover:bg-slate-600/30"
-                      onClick={() => setDraftRoles((prev) => prev.filter((x) => x !== r))}
+                      onClick={() =>
+                        setDraftRoles((prev) => prev.filter((x) => x !== r))
+                      }
                       aria-label={`Remove ${r}`}
                     >
                       <HiX className="h-3.5 w-3.5" />
@@ -326,7 +343,7 @@ const ExperienceFeed = () => {
           )}
         </FilterSection>
 
-        <FilterSection theme={theme} title="Experience level">
+        {/* <FilterSection theme={theme} title="Experience level">
           <div className="flex flex-col gap-1.5">
             {EXPERIENCE_LEVELS.map((lvl) => (
               <label
@@ -339,36 +356,52 @@ const ExperienceFeed = () => {
                   type="checkbox"
                   className={checkboxClass}
                   checked={draftLevels.includes(lvl)}
-                  onChange={() => setDraftLevels((prev) => toggleInList(prev, lvl))}
+                  onChange={() =>
+                    setDraftLevels((prev) => toggleInList(prev, lvl))
+                  }
                 />
                 {lvl}
               </label>
             ))}
           </div>
-        </FilterSection>
+        </FilterSection> */}
       </form>
     </aside>
   );
 
   const mainHeader = (
-    <header className="mb-5">
-      <h1 className={`text-xl font-semibold tracking-tight sm:text-2xl ${headingPage(theme)}`}>
+    <header className="mb-6">
+      <div className="flex flex-wrap gap-2">
+        <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-400 ring-1 ring-emerald-500/20">
+          Community knowledge
+        </span>
+        <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-400 ring-1 ring-emerald-500/20">
+          Filter by company & role
+        </span>
+      </div>
+      <h1
+        className={`mt-4 text-xl font-bold tracking-tight sm:text-2xl ${headingPage(theme)}`}
+      >
         Experience feed
       </h1>
-      <p className={`mt-1.5 max-w-xl text-sm ${subheading}`}>
-        Structured interview write-ups from candidates. Use the filters on the left to narrow by
-        company, role, and level.
+      <p
+        className={`mt-2 max-w-xl text-sm leading-relaxed ${
+          theme === "dark" ? "text-slate-300" : "text-slate-600"
+        }`}
+      >
+        Structured interview write-ups from candidates. Use the filters on the
+        left to narrow by company, role, and level.
       </p>
     </header>
   );
 
   if (loading && experiences.length === 0 && !error) {
     return (
-      <div className={`min-h-screen pt-[4.25rem] pb-10 ${pageBg(theme)}`}>
-        <div className="mx-auto flex max-w-5xl flex-col gap-4 px-3 sm:px-4 lg:flex-row xl:max-w-6xl lg:px-5">
+      <div className={`min-h-screen pt-20 pb-14 ${pageBg(theme)}`}>
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 sm:px-6 lg:flex-row lg:gap-7">
           {sidebar}
           <div className="flex min-h-[50vh] flex-1 flex-col items-center justify-center gap-4">
-            <span className="loading loading-spinner loading-lg text-blue-500" />
+            <span className="loading loading-spinner loading-lg text-emerald-500" />
             <p className="text-sm text-slate-500">Loading experiences…</p>
           </div>
         </div>
@@ -378,8 +411,8 @@ const ExperienceFeed = () => {
 
   if (error) {
     return (
-      <div className={`min-h-screen pt-[4.25rem] pb-10 px-3 sm:px-4 ${pageBg(theme)}`}>
-        <div className="mx-auto flex max-w-5xl flex-col gap-4 lg:flex-row xl:max-w-6xl lg:px-2">
+      <div className={`min-h-screen pt-20 pb-14 ${pageBg(theme)}`}>
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 sm:px-6 lg:flex-row lg:gap-7">
           {sidebar}
           <div className="flex flex-1 flex-col items-center justify-center py-20 text-center">
             <p
@@ -389,7 +422,11 @@ const ExperienceFeed = () => {
             >
               {error}
             </p>
-            <button type="button" onClick={() => window.location.reload()} className={`mt-6 ${linkButton}`}>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className={`mt-6 ${linkButton}`}
+            >
               Reload page
             </button>
           </div>
@@ -399,31 +436,39 @@ const ExperienceFeed = () => {
   }
 
   return (
-    <div className={`min-h-screen pt-[4.25rem] pb-10 ${pageBg(theme)}`}>
-      <div className="mx-auto flex max-w-5xl flex-col gap-4 px-3 sm:px-4 lg:flex-row lg:items-start lg:gap-5 xl:max-w-6xl lg:px-5">
+    <div className={`min-h-screen pt-20 pb-14 ${pageBg(theme)}`}>
+      <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 sm:px-6 lg:flex-row lg:items-start lg:gap-7">
         {sidebar}
 
         <main className="min-w-0 flex-1">
           {mainHeader}
 
           {!experiences || experiences.length === 0 ? (
-            <div className={`rounded-lg p-6 text-center ${panelEmpty(theme)}`}>
+            <div className={`rounded-2xl p-6 text-center ${panelEmpty(theme)}`}>
               <p className={`text-base font-medium ${headingPage(theme)}`}>
-                {hasActiveUrlFilters ? "No experiences match these filters." : "The feed is empty for now."}
+                {hasActiveUrlFilters
+                  ? "No experiences match these filters."
+                  : "The feed is empty for now."}
               </p>
               <p className="mt-3 mx-auto max-w-md text-sm leading-relaxed text-slate-500">
                 {hasActiveUrlFilters
                   ? "Try removing a company or role, or add a custom filter that matches how people labeled their experience."
                   : "When candidates share experiences, they will appear here. Share yours to help others prepare."}
               </p>
-              <button type="button" onClick={() => navigate("/share")} className={`mt-6 ${linkButton}`}>
+              <button
+                type="button"
+                onClick={() => navigate("/share")}
+                className={`mt-6 ${linkButton}`}
+              >
                 Share an experience →
               </button>
             </div>
           ) : (
             <div className="flex flex-col gap-3">
               {loading && experiences.length > 0 && (
-                <p className="text-center text-sm text-slate-500">Updating results…</p>
+                <p className="text-center text-sm text-slate-500">
+                  Updating results…
+                </p>
               )}
               {experiences.map((exp) => (
                 <ExperienceCard

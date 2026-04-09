@@ -20,7 +20,10 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("video/") || file.mimetype.startsWith("image/")) {
+  if (
+    file.mimetype.startsWith("video/") ||
+    file.mimetype.startsWith("image/")
+  ) {
     cb(null, true);
   } else {
     cb(new Error("Only video or image files are allowed!"), false);
@@ -32,6 +35,8 @@ const upload = multer({
   fileFilter: fileFilter,
   limits: {
     fileSize: 75 * 1024 * 1024, // 75MB limit
+    // Large JSON in interviewRoundDetails must not be truncated (default can be tight on some setups)
+    fieldSize: 12 * 1024 * 1024,
   },
 });
 

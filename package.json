@@ -1,0 +1,10 @@
+{
+  "name": "streamzone",
+  "private": true,
+  "description": "InsightHire monorepo — run builds and installs from the repository root",
+  "scripts": {
+    "build": "npm run build --prefix frontend",
+    "build:frontend": "npm run build --prefix frontend",
+    "install:all": "npm install --prefix frontend && npm install --prefix backend"
+  }
+}

@@ -54,9 +54,103 @@ function normalizeExperience(doc) {
     tipsNotes: o.tipsNotes || "",
     howToPrepare: o.howToPrepare || "",
     outcome: o.outcome || null,
+    interviewRoundDetails: Array.isArray(o.interviewRoundDetails)
+      ? o.interviewRoundDetails.map((r) => ({
+          name: r.name || "",
+          questionsText: r.questionsText || "",
+          notes: r.notes || "",
+          preparationTips: r.preparationTips || "",
+          notesImages: Array.isArray(r.notesImages) ? r.notesImages : [],
+        }))
+      : [],
     createdAt: o.createdAt,
     updatedAt: o.updatedAt,
   };
+}
+
+function questionLinesFromText(text) {
+  return String(text || "")
+    .split(/\r?\n/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function parseInterviewRoundDetails(raw) {
+  if (raw == null || raw === "") return [];
+  let source = raw;
+  if (Array.isArray(source)) {
+    if (
+      source.length &&
+      typeof source[0] === "object" &&
+      source[0] !== null &&
+      ("questionsText" in source[0] || "name" in source[0])
+    ) {
+      return source.map((r) => ({
+        name: String(r?.name ?? "").trim(),
+        questionsText: String(r?.questionsText ?? "").trim(),
+        notes: String(r?.notes ?? "").trim(),
+        preparationTips: String(r?.preparationTips ?? "").trim(),
+      }));
+    }
+    source = source[0];
+  }
+  if (typeof source === "object" && source !== null && !Array.isArray(source)) {
+    return [];
+  }
+  try {
+    const parsed = typeof source === "string" ? JSON.parse(source) : source;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map((r) => ({
+      name: String(r?.name ?? "").trim(),
+      questionsText: String(r?.questionsText ?? "").trim(),
+      notes: String(r?.notes ?? "").trim(),
+      preparationTips: String(r?.preparationTips ?? "").trim(),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/** Non-empty interviewRoundDetails from multipart (string) or JSON body (array). */
+function hasRoundDetailsInput(raw) {
+  if (raw === undefined || raw === null) return false;
+  if (Array.isArray(raw)) return raw.length > 0;
+  return String(raw).trim() !== "";
+}
+
+async function uploadVideoTempFile(file, cloudinary) {
+  if (!file?.path) return { url: null, thumbnail: null };
+  const isVideo = file.mimetype?.startsWith("video/");
+  const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+  const publicId = isVideo ? `video-${uniqueSuffix}` : `image-${uniqueSuffix}`;
+  try {
+    const result = await cloudinary.uploader.upload(file.path, {
+      folder: "insighthire/experiences",
+      resource_type: isVideo ? "video" : "image",
+      public_id: publicId,
+    });
+    const url = result?.secure_url || result?.url || null;
+    const thumbnail = url ? url.replace(/\.[^/.]+$/, ".jpg") : null;
+    return { url, thumbnail };
+  } finally {
+    try {
+      await fs.unlink(file.path);
+    } catch {
+      /* ignore cleanup errors */
+    }
+  }
+}
+
+function flattenQuestionsFromRounds(rounds) {
+  const out = [];
+  for (const r of rounds) {
+    const lines = questionLinesFromText(r.questionsText);
+    const prefix = r.name ? `[${r.name}] ` : "";
+    for (const line of lines) {
+      out.push(prefix + line);
+    }
+  }
+  return out;
 }
 
 function parseQuestions(raw) {
@@ -147,51 +241,20 @@ const getAllExperiences = async (req, res) => {
   }
 };
 
-const shareExperience = async (req, res) => {
+async function persistNewExperience(req, res, next, videoFile) {
   try {
-    const cloudinary = getCloudinary();
-
-    async function uploadLocalFile(file, { folder }) {
-      if (!file?.path) return null;
-      const isVideo = file.mimetype?.startsWith("video/");
-      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-      const publicId = isVideo ? `video-${uniqueSuffix}` : `image-${uniqueSuffix}`;
-      try {
-        const result = await cloudinary.uploader.upload(file.path, {
-          folder,
-          resource_type: isVideo ? "video" : "image",
-          public_id: publicId,
-        });
-        return result?.secure_url || result?.url || null;
-      } finally {
-        // Always attempt cleanup of temp files
-        try {
-          await fs.unlink(file.path);
-        } catch {
-          /* ignore cleanup errors */
-        }
-      }
+    const needsCloudinary = !!videoFile;
+    if (
+      needsCloudinary &&
+      (!process.env.CLOUDINARY_CLOUD_NAME ||
+        !process.env.CLOUDINARY_API_KEY ||
+        !process.env.CLOUDINARY_API_SECRET)
+    ) {
+      return res.status(503).json({
+        error:
+          "File upload is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET on the server.",
+      });
     }
-
-    const videoFile = req.files?.video?.[0];
-    const url = await uploadLocalFile(videoFile, { folder: "insighthire/experiences" });
-    const thumbnail = url ? url.replace(/\.[^/.]+$/, ".jpg") : undefined;
-
-    const detailsNotesImages = (
-      await Promise.all(
-        (req.files?.detailsNotesImages || []).map((f) =>
-          uploadLocalFile(f, { folder: "insighthire/experiences" })
-        )
-      )
-    ).filter(Boolean);
-
-    const questionsNotesImages = (
-      await Promise.all(
-        (req.files?.questionsNotesImages || []).map((f) =>
-          uploadLocalFile(f, { folder: "insighthire/experiences" })
-        )
-      )
-    ).filter(Boolean);
 
     const {
       title,
@@ -203,14 +266,20 @@ const shareExperience = async (req, res) => {
       role,
       experienceLevel,
       interviewRounds,
+      interviewRoundDetails: interviewRoundDetailsRaw,
+      structuredRounds: structuredRoundsRaw,
       detailsNotes,
       questions: questionsRaw,
       questionsNotes,
       tips,
       tipsNotes,
-      howToPrepare,
       outcome,
     } = req.body;
+
+    const expectsStructuredRounds =
+      structuredRoundsRaw === "1" ||
+      structuredRoundsRaw === "true" ||
+      structuredRoundsRaw === true;
 
     if (!title || !String(title).trim()) {
       return res.status(400).json({ error: "Title is required" });
@@ -225,21 +294,90 @@ const shareExperience = async (req, res) => {
       return res.status(400).json({ error: "Experience level is required" });
     }
 
-    const questions = parseQuestions(questionsRaw);
-    if (!questions.length) {
+    const hadInterviewRoundDetailsField = hasRoundDetailsInput(interviewRoundDetailsRaw);
+
+    if (expectsStructuredRounds && !hadInterviewRoundDetailsField) {
       return res.status(400).json({
-        error: "At least one interview question is required (add a line per question)",
+        error:
+          "Server did not receive interview round data. Try again without special characters in titles, or update the server and redeploy.",
       });
     }
 
-    let rounds = parseInt(interviewRounds, 10);
-    if (Number.isNaN(rounds) || rounds < 0) rounds = 1;
+    const preFilterRounds = parseInterviewRoundDetails(interviewRoundDetailsRaw);
+    if (hadInterviewRoundDetailsField && preFilterRounds.length === 0) {
+      return res.status(400).json({
+        error:
+          "Could not parse interview rounds. Please try again, or shorten special characters in round text.",
+      });
+    }
+
+    let parsedRoundDetails = preFilterRounds.filter(
+      (r) =>
+        questionLinesFromText(r.questionsText).length > 0 ||
+        String(r.notes || "").trim() ||
+        String(r.name || "").trim() ||
+        String(r.preparationTips || "").trim()
+    );
+
+    if (hadInterviewRoundDetailsField && parsedRoundDetails.length === 0) {
+      return res.status(400).json({
+        error:
+          "Interview rounds were empty after validation. Add at least one question line per round (or notes / round name / prep).",
+      });
+    }
+
+    const hasStructuredRounds = parsedRoundDetails.some(
+      (r) => questionLinesFromText(r.questionsText).length > 0
+    );
+
+    let questions;
+    let roundsCount;
+
+    if (hasStructuredRounds) {
+      const allQuestionLines = parsedRoundDetails.flatMap((r) =>
+        questionLinesFromText(r.questionsText)
+      );
+      if (!allQuestionLines.length) {
+        return res.status(400).json({
+          error: "Add at least one interview question in your rounds (one per line).",
+        });
+      }
+      questions = flattenQuestionsFromRounds(parsedRoundDetails);
+      roundsCount = parsedRoundDetails.length;
+    } else if (parsedRoundDetails.length > 0) {
+      questions = parseQuestions(questionsRaw);
+      if (!questions.length) {
+        return res.status(400).json({
+          error: "At least one interview question is required (add a line per question)",
+        });
+      }
+      roundsCount = parsedRoundDetails.length;
+    } else {
+      questions = parseQuestions(questionsRaw);
+      if (!questions.length) {
+        return res.status(400).json({
+          error: "At least one interview question is required (add a line per question)",
+        });
+      }
+      let rounds = parseInt(interviewRounds, 10);
+      if (Number.isNaN(rounds) || rounds < 0) rounds = 1;
+      roundsCount = rounds;
+    }
 
     let vis = visibility === "private" ? "private" : "public";
     let outcomeVal = outcome;
     if (outcomeVal === "" || outcomeVal === undefined) outcomeVal = undefined;
     if (outcomeVal && !["selected", "rejected"].includes(outcomeVal)) {
       return res.status(400).json({ error: "Invalid outcome" });
+    }
+
+    let url;
+    let thumbnail;
+    if (needsCloudinary) {
+      const cloudinary = getCloudinary();
+      const up = await uploadVideoTempFile(videoFile, cloudinary);
+      url = up.url;
+      thumbnail = up.thumbnail;
     }
 
     const payload = {
@@ -250,23 +388,21 @@ const shareExperience = async (req, res) => {
       company: String(company).trim(),
       role: String(role).trim(),
       experienceLevel: String(experienceLevel).trim(),
-      interviewRounds: rounds,
+      interviewRounds: roundsCount,
       questions,
       tips: tips ? String(tips).trim() : "",
     };
+    if (parsedRoundDetails.length > 0) {
+      payload.interviewRoundDetails = parsedRoundDetails;
+    }
     if (detailsNotes != null && String(detailsNotes).trim()) {
       payload.detailsNotes = String(detailsNotes).trim();
     }
-    if (detailsNotesImages.length) payload.detailsNotesImages = detailsNotesImages;
     if (questionsNotes != null && String(questionsNotes).trim()) {
       payload.questionsNotes = String(questionsNotes).trim();
     }
-    if (questionsNotesImages.length) payload.questionsNotesImages = questionsNotesImages;
     if (tipsNotes != null && String(tipsNotes).trim()) {
       payload.tipsNotes = String(tipsNotes).trim();
-    }
-    if (howToPrepare != null && String(howToPrepare).trim()) {
-      payload.howToPrepare = String(howToPrepare).trim();
     }
     if (url) payload.videoUrl = url;
     if (thumbnail) payload.thumbnail = thumbnail;
@@ -281,7 +417,57 @@ const shareExperience = async (req, res) => {
     res.status(201).json(normalizeExperience(created));
   } catch (err) {
     console.error("Share experience error:", err);
-    res.status(500).json({ error: err.message });
+    return next(err);
+  }
+}
+
+const shareExperience = async (req, res, next) => {
+  const videoFile = req.files?.video?.[0];
+  return persistNewExperience(req, res, next, videoFile);
+};
+
+const shareExperienceJson = async (req, res, next) => {
+  return persistNewExperience(req, res, next, undefined);
+};
+
+const attachExperienceVideo = async (req, res, next) => {
+  try {
+    if (
+      !process.env.CLOUDINARY_CLOUD_NAME ||
+      !process.env.CLOUDINARY_API_KEY ||
+      !process.env.CLOUDINARY_API_SECRET
+    ) {
+      return res.status(503).json({
+        error:
+          "File upload is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET on the server.",
+      });
+    }
+    const { id } = req.params;
+    const videoFile = req.file;
+    if (!videoFile) {
+      return res.status(400).json({ error: "Video file is required" });
+    }
+
+    const exp = await Experience.findById(id);
+    if (!exp) {
+      return res.status(404).json({ message: "Experience not found" });
+    }
+
+    const cloudinary = getCloudinary();
+    const { url, thumbnail } = await uploadVideoTempFile(videoFile, cloudinary);
+    if (!url) {
+      return res.status(500).json({ error: "Video upload failed" });
+    }
+    exp.videoUrl = url;
+    if (thumbnail) exp.thumbnail = thumbnail;
+    await exp.save();
+    res.status(200).json(normalizeExperience(exp));
+  } catch (err) {
+    if (err.name === "CastError") {
+      return res.status(404).json({ message: "Experience not found" });
+    }
+    console.error("attachExperienceVideo error:", err);
+    return next(err);
   }
 };
 
@@ -306,8 +492,16 @@ const getExperienceById = async (req, res) => {
       }
     }
 
-    res.status(200).json(normalizeExperience(exp));
+    try {
+      res.status(200).json(normalizeExperience(exp));
+    } catch (normErr) {
+      console.error("normalizeExperience error:", normErr);
+      res.status(500).json({ message: "Server error" });
+    }
   } catch (err) {
+    if (err.name === "CastError") {
+      return res.status(404).json({ message: "Experience not found" });
+    }
     console.error(err);
     res.status(500).json({ message: "Server error" });
   }
@@ -422,6 +616,8 @@ const getCandidateExperiences = async (req, res) => {
 module.exports = {
   getAllExperiences,
   shareExperience,
+  shareExperienceJson,
+  attachExperienceVideo,
   getExperienceById,
   toggleHelpful,
   toggleNotHelpful,
