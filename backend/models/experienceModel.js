@@ -56,6 +56,16 @@ const experienceSchema = new mongoose.Schema(
       default: "Other",
     },
     interviewRounds: { type: Number, default: 1, min: 0 },
+    /** Per-round name, multiline questions, notes (optional; legacy docs omit this) */
+    interviewRoundDetails: [
+      {
+        name: { type: String, default: "", trim: true },
+        questionsText: { type: String, default: "", trim: true },
+        notes: { type: String, default: "", trim: true },
+        preparationTips: { type: String, default: "", trim: true },
+        notesImages: { type: [String], default: [] },
+      },
+    ],
     detailsNotes: { type: String, default: "", trim: true },
     detailsNotesImages: { type: [String], default: [] },
     questions: { type: [String], default: [] },
