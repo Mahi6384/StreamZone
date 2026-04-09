@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthModal from "./AuthModal";
-import { HiDocumentAdd, HiUserCircle } from "react-icons/hi";
+import { HiDocumentAdd, HiHome, HiUserCircle } from "react-icons/hi";
 import { navBg, ghostButton, primaryButton } from "../theme/ui";
 import { useTheme } from "../context/ThemeContext";
 
@@ -79,19 +79,30 @@ const Navbar = () => {
     <nav
       className={`fixed top-0 left-0 right-0 z-[100] transition-colors duration-200 ${navSurface}`}
     >
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-3 py-2 sm:px-5">
-        <button
-          type="button"
-          onClick={() => navigate("/")}
-          className="shrink-0 text-left"
-        >
-          <span className="block text-base font-semibold tracking-tight text-emerald-500 sm:text-lg">
-            InsightHire
-          </span>
-          <span className="hidden text-[9px] font-medium uppercase tracking-wider text-slate-500 sm:block">
-            Interview knowledge
-          </span>
-        </button>
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-3 py-2 sm:px-5">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="shrink-0 text-left"
+          >
+            <span className="block text-base font-semibold tracking-tight text-emerald-400 sm:text-lg">
+              InsightHire
+            </span>
+            <span className="hidden text-[9px] font-medium uppercase tracking-wider text-slate-500 sm:block">
+              Interview knowledge
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className={`${ghostButton(theme)} inline-flex shrink-0 items-center gap-1.5 !px-2.5 sm:!px-3`}
+            title="Home"
+          >
+            <HiHome className="h-4 w-4 text-emerald-500" aria-hidden />
+            <span className="text-sm font-medium">Home</span>
+          </button>
+        </div>
 
         <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">
           <button

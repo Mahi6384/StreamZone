@@ -25,7 +25,7 @@ export default function ThemedToaster() {
               border: "1px solid #e2e8f0",
               fontSize: "14px",
             },
-        success: { iconTheme: { primary: "#3b82f6", secondary: "#fff" } },
+        success: { iconTheme: { primary: "#10b981", secondary: "#fff" } },
         error: { iconTheme: { primary: "#94a3b8", secondary: "#fff" } },
       }}
     />
