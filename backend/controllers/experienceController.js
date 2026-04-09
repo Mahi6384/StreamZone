@@ -54,9 +54,53 @@ function normalizeExperience(doc) {
     tipsNotes: o.tipsNotes || "",
     howToPrepare: o.howToPrepare || "",
     outcome: o.outcome || null,
+    interviewRoundDetails: Array.isArray(o.interviewRoundDetails)
+      ? o.interviewRoundDetails.map((r) => ({
+          name: r.name || "",
+          questionsText: r.questionsText || "",
+          notes: r.notes || "",
+          preparationTips: r.preparationTips || "",
+          notesImages: Array.isArray(r.notesImages) ? r.notesImages : [],
+        }))
+      : [],
     createdAt: o.createdAt,
     updatedAt: o.updatedAt,
   };
+}
+
+function questionLinesFromText(text) {
+  return String(text || "")
+    .split(/\r?\n/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function parseInterviewRoundDetails(raw) {
+  if (raw == null || raw === "") return [];
+  try {
+    const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map((r) => ({
+      name: String(r?.name ?? "").trim(),
+      questionsText: String(r?.questionsText ?? "").trim(),
+      notes: String(r?.notes ?? "").trim(),
+      preparationTips: String(r?.preparationTips ?? "").trim(),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+function flattenQuestionsFromRounds(rounds) {
+  const out = [];
+  for (const r of rounds) {
+    const lines = questionLinesFromText(r.questionsText);
+    const prefix = r.name ? `[${r.name}] ` : "";
+    for (const line of lines) {
+      out.push(prefix + line);
+    }
+  }
+  return out;
 }
 
 function parseQuestions(raw) {
@@ -147,8 +191,21 @@ const getAllExperiences = async (req, res) => {
   }
 };
 
-const shareExperience = async (req, res) => {
+const shareExperience = async (req, res, next) => {
   try {
+    const needsCloudinary = (req.files?.video?.length || 0) > 0;
+    if (
+      needsCloudinary &&
+      (!process.env.CLOUDINARY_CLOUD_NAME ||
+        !process.env.CLOUDINARY_API_KEY ||
+        !process.env.CLOUDINARY_API_SECRET)
+    ) {
+      return res.status(503).json({
+        error:
+          "File upload is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET on the server.",
+      });
+    }
+
     const cloudinary = getCloudinary();
 
     async function uploadLocalFile(file, { folder }) {
@@ -177,22 +234,6 @@ const shareExperience = async (req, res) => {
     const url = await uploadLocalFile(videoFile, { folder: "insighthire/experiences" });
     const thumbnail = url ? url.replace(/\.[^/.]+$/, ".jpg") : undefined;
 
-    const detailsNotesImages = (
-      await Promise.all(
-        (req.files?.detailsNotesImages || []).map((f) =>
-          uploadLocalFile(f, { folder: "insighthire/experiences" })
-        )
-      )
-    ).filter(Boolean);
-
-    const questionsNotesImages = (
-      await Promise.all(
-        (req.files?.questionsNotesImages || []).map((f) =>
-          uploadLocalFile(f, { folder: "insighthire/experiences" })
-        )
-      )
-    ).filter(Boolean);
-
     const {
       title,
       description,
@@ -203,12 +244,12 @@ const shareExperience = async (req, res) => {
       role,
       experienceLevel,
       interviewRounds,
+      interviewRoundDetails: interviewRoundDetailsRaw,
       detailsNotes,
       questions: questionsRaw,
       questionsNotes,
       tips,
       tipsNotes,
-      howToPrepare,
       outcome,
     } = req.body;
 
@@ -225,15 +266,43 @@ const shareExperience = async (req, res) => {
       return res.status(400).json({ error: "Experience level is required" });
     }
 
-    const questions = parseQuestions(questionsRaw);
-    if (!questions.length) {
-      return res.status(400).json({
-        error: "At least one interview question is required (add a line per question)",
-      });
-    }
+    let parsedRoundDetails = parseInterviewRoundDetails(interviewRoundDetailsRaw).filter(
+      (r) =>
+        questionLinesFromText(r.questionsText).length > 0 ||
+        String(r.notes || "").trim() ||
+        String(r.name || "").trim() ||
+        String(r.preparationTips || "").trim()
+    );
 
-    let rounds = parseInt(interviewRounds, 10);
-    if (Number.isNaN(rounds) || rounds < 0) rounds = 1;
+    const hasStructuredRounds = parsedRoundDetails.some(
+      (r) => questionLinesFromText(r.questionsText).length > 0
+    );
+
+    let questions;
+    let roundsCount;
+
+    if (hasStructuredRounds) {
+      const allQuestionLines = parsedRoundDetails.flatMap((r) =>
+        questionLinesFromText(r.questionsText)
+      );
+      if (!allQuestionLines.length) {
+        return res.status(400).json({
+          error: "Add at least one interview question in your rounds (one per line).",
+        });
+      }
+      questions = flattenQuestionsFromRounds(parsedRoundDetails);
+      roundsCount = parsedRoundDetails.length;
+    } else {
+      questions = parseQuestions(questionsRaw);
+      if (!questions.length) {
+        return res.status(400).json({
+          error: "At least one interview question is required (add a line per question)",
+        });
+      }
+      let rounds = parseInt(interviewRounds, 10);
+      if (Number.isNaN(rounds) || rounds < 0) rounds = 1;
+      roundsCount = rounds;
+    }
 
     let vis = visibility === "private" ? "private" : "public";
     let outcomeVal = outcome;
@@ -250,23 +319,21 @@ const shareExperience = async (req, res) => {
       company: String(company).trim(),
       role: String(role).trim(),
       experienceLevel: String(experienceLevel).trim(),
-      interviewRounds: rounds,
+      interviewRounds: roundsCount,
       questions,
       tips: tips ? String(tips).trim() : "",
     };
+    if (hasStructuredRounds) {
+      payload.interviewRoundDetails = parsedRoundDetails;
+    }
     if (detailsNotes != null && String(detailsNotes).trim()) {
       payload.detailsNotes = String(detailsNotes).trim();
     }
-    if (detailsNotesImages.length) payload.detailsNotesImages = detailsNotesImages;
     if (questionsNotes != null && String(questionsNotes).trim()) {
       payload.questionsNotes = String(questionsNotes).trim();
     }
-    if (questionsNotesImages.length) payload.questionsNotesImages = questionsNotesImages;
     if (tipsNotes != null && String(tipsNotes).trim()) {
       payload.tipsNotes = String(tipsNotes).trim();
-    }
-    if (howToPrepare != null && String(howToPrepare).trim()) {
-      payload.howToPrepare = String(howToPrepare).trim();
     }
     if (url) payload.videoUrl = url;
     if (thumbnail) payload.thumbnail = thumbnail;
@@ -281,7 +348,7 @@ const shareExperience = async (req, res) => {
     res.status(201).json(normalizeExperience(created));
   } catch (err) {
     console.error("Share experience error:", err);
-    res.status(500).json({ error: err.message });
+    return next(err);
   }
 };
 
