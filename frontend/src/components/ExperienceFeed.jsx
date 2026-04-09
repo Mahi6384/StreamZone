@@ -12,7 +12,6 @@ import {
   labelCls,
   inputCls,
   headingPage,
-  subheading,
   linkButton,
 } from "../theme/ui";
 import { useTheme } from "../context/ThemeContext";
@@ -69,7 +68,7 @@ function FilterSection({ theme, title, children }) {
         theme === "dark" ? "border-slate-700" : "border-slate-200"
       }`}
     >
-      <h3 className={`${labelCls} mb-2 !text-[10px]`}>{title}</h3>
+      <h3 className={`${labelCls} mb-2 !text-[11px]`}>{title}</h3>
       {children}
     </div>
   );
@@ -168,20 +167,18 @@ const ExperienceFeed = () => {
     draftCompanies.length > 0 || draftRoles.length > 0 || draftLevels.length > 0;
 
   const checkboxClass =
-    "h-3.5 w-3.5 shrink-0 rounded border-slate-500 accent-blue-600 focus:ring-2 focus:ring-blue-500/30";
+    "h-3.5 w-3.5 shrink-0 rounded border-slate-500 accent-emerald-600 focus:ring-2 focus:ring-emerald-500/30";
 
   const sidebar = (
     <aside
-      className={`w-full shrink-0 lg:w-60 xl:w-64 lg:sticky lg:top-[4.25rem] lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto ${panel(
-        theme
-      )} rounded-lg p-3 sm:p-4 text-[13px]`}
+      className={`w-full shrink-0 lg:w-72 xl:w-80 ${panel(theme)} rounded-2xl p-4 sm:p-5 text-[13px]`}
     >
       <div className="mb-3 flex items-start justify-between gap-2">
         <div>
-          <h2 className={`text-xs font-semibold uppercase tracking-wide ${headingPage(theme)}`}>
+          <h2 className={`text-sm font-bold uppercase tracking-wide ${headingPage(theme)}`}>
             Filters
           </h2>
-          <p className="mt-1 text-[11px] leading-snug text-slate-500">
+          <p className="mt-1.5 text-xs leading-snug text-slate-500">
             Select companies, roles, and levels. Add custom names below the lists.
           </p>
         </div>
@@ -207,7 +204,7 @@ const ExperienceFeed = () => {
         </div>
 
         <FilterSection theme={theme} title="Companies">
-          <div className="mb-2 flex max-h-32 flex-col gap-1.5 overflow-y-auto pr-1">
+          <div className="mb-2 flex flex-col gap-1.5">
             {PRESET_COMPANIES.map((name) => (
               <label
                 key={name}
@@ -267,7 +264,7 @@ const ExperienceFeed = () => {
         </FilterSection>
 
         <FilterSection theme={theme} title="Roles">
-          <div className="mb-2 flex max-h-32 flex-col gap-1.5 overflow-y-auto pr-1">
+          <div className="mb-2 flex flex-col gap-1.5">
             {PRESET_ROLES.map((name) => (
               <label
                 key={name}
@@ -351,11 +348,23 @@ const ExperienceFeed = () => {
   );
 
   const mainHeader = (
-    <header className="mb-5">
-      <h1 className={`text-xl font-semibold tracking-tight sm:text-2xl ${headingPage(theme)}`}>
+    <header className="mb-6">
+      <div className="flex flex-wrap gap-2">
+        <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-400 ring-1 ring-emerald-500/20">
+          Community knowledge
+        </span>
+        <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-400 ring-1 ring-emerald-500/20">
+          Filter by company & role
+        </span>
+      </div>
+      <h1 className={`mt-4 text-xl font-bold tracking-tight sm:text-2xl ${headingPage(theme)}`}>
         Experience feed
       </h1>
-      <p className={`mt-1.5 max-w-xl text-sm ${subheading}`}>
+      <p
+        className={`mt-2 max-w-xl text-sm leading-relaxed ${
+          theme === "dark" ? "text-slate-300" : "text-slate-600"
+        }`}
+      >
         Structured interview write-ups from candidates. Use the filters on the left to narrow by
         company, role, and level.
       </p>
@@ -364,11 +373,11 @@ const ExperienceFeed = () => {
 
   if (loading && experiences.length === 0 && !error) {
     return (
-      <div className={`min-h-screen pt-[4.25rem] pb-10 ${pageBg(theme)}`}>
-        <div className="mx-auto flex max-w-5xl flex-col gap-4 px-3 sm:px-4 lg:flex-row xl:max-w-6xl lg:px-5">
+      <div className={`min-h-screen pt-20 pb-14 ${pageBg(theme)}`}>
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 sm:px-6 lg:flex-row lg:gap-7">
           {sidebar}
           <div className="flex min-h-[50vh] flex-1 flex-col items-center justify-center gap-4">
-            <span className="loading loading-spinner loading-lg text-blue-500" />
+            <span className="loading loading-spinner loading-lg text-emerald-500" />
             <p className="text-sm text-slate-500">Loading experiences…</p>
           </div>
         </div>
@@ -378,8 +387,8 @@ const ExperienceFeed = () => {
 
   if (error) {
     return (
-      <div className={`min-h-screen pt-[4.25rem] pb-10 px-3 sm:px-4 ${pageBg(theme)}`}>
-        <div className="mx-auto flex max-w-5xl flex-col gap-4 lg:flex-row xl:max-w-6xl lg:px-2">
+      <div className={`min-h-screen pt-20 pb-14 ${pageBg(theme)}`}>
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 sm:px-6 lg:flex-row lg:gap-7">
           {sidebar}
           <div className="flex flex-1 flex-col items-center justify-center py-20 text-center">
             <p
@@ -399,15 +408,15 @@ const ExperienceFeed = () => {
   }
 
   return (
-    <div className={`min-h-screen pt-[4.25rem] pb-10 ${pageBg(theme)}`}>
-      <div className="mx-auto flex max-w-5xl flex-col gap-4 px-3 sm:px-4 lg:flex-row lg:items-start lg:gap-5 xl:max-w-6xl lg:px-5">
+    <div className={`min-h-screen pt-20 pb-14 ${pageBg(theme)}`}>
+      <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 sm:px-6 lg:flex-row lg:items-start lg:gap-7">
         {sidebar}
 
         <main className="min-w-0 flex-1">
           {mainHeader}
 
           {!experiences || experiences.length === 0 ? (
-            <div className={`rounded-lg p-6 text-center ${panelEmpty(theme)}`}>
+            <div className={`rounded-2xl p-6 text-center ${panelEmpty(theme)}`}>
               <p className={`text-base font-medium ${headingPage(theme)}`}>
                 {hasActiveUrlFilters ? "No experiences match these filters." : "The feed is empty for now."}
               </p>
