@@ -235,6 +235,35 @@ const getAllExperiences = async (req, res) => {
       query.$and = andParts;
     }
 
+    const wantPagination =
+      req.query.page !== undefined ||
+      req.query.limit !== undefined;
+
+    if (wantPagination) {
+      const pageNum = Math.max(
+        1,
+        parseInt(String(req.query.page ?? "1"), 10) || 1,
+      );
+      const limitRaw = parseInt(String(req.query.limit ?? "20"), 10) || 20;
+      const limitNum = Math.min(100, Math.max(1, limitRaw));
+      const skip = (pageNum - 1) * limitNum;
+
+      const [rows, total] = await Promise.all([
+        Experience.find(query)
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limitNum),
+        Experience.countDocuments(query),
+      ]);
+
+      return res.json({
+        items: rows.map(normalizeExperience),
+        total,
+        page: pageNum,
+        limit: limitNum,
+      });
+    }
+
     const rows = await Experience.find(query).sort({ createdAt: -1 });
     res.json(rows.map(normalizeExperience));
   } catch (err) {
