@@ -51,7 +51,9 @@ function publishErrorMessage(error) {
     if (/<!DOCTYPE|<html|<title>Error|<pre>Internal Server Error/i.test(data)) {
       return "Server error while publishing. If you attached a video, ensure the API has Cloudinary env vars set.";
     }
-    return data.length > 400 ? "Could not publish your experience. Try again." : data;
+    return data.length > 400
+      ? "Could not publish your experience. Try again."
+      : data;
   }
   if (data && typeof data === "object") {
     return (
@@ -86,7 +88,9 @@ const ShareExperiencePage = () => {
   const navigate = useNavigate();
   const { id: editExperienceId } = useParams();
   const isEditMode = Boolean(editExperienceId);
-  const [loadingExperience, setLoadingExperience] = useState(Boolean(editExperienceId));
+  const [loadingExperience, setLoadingExperience] = useState(
+    Boolean(editExperienceId),
+  );
   const [loadEditError, setLoadEditError] = useState(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -140,9 +144,15 @@ const ShareExperiencePage = () => {
         setQuestionsNotes(ex.questionsNotes || "");
         setTips(ex.tips || "");
         setTipsNotes(ex.tipsNotes || "");
-        setOutcome(ex.outcome === "selected" || ex.outcome === "rejected" ? ex.outcome : "");
+        setOutcome(
+          ex.outcome === "selected" || ex.outcome === "rejected"
+            ? ex.outcome
+            : "",
+        );
 
-        const details = Array.isArray(ex.interviewRoundDetails) ? ex.interviewRoundDetails : [];
+        const details = Array.isArray(ex.interviewRoundDetails)
+          ? ex.interviewRoundDetails
+          : [];
         if (details.length > 0) {
           setRounds(
             details.map((r) => ({
@@ -283,7 +293,10 @@ const ShareExperiencePage = () => {
           const videoForm = new FormData();
           videoForm.append("video", file);
           try {
-            await axios.post(`${EXPERIENCES_API}/${newId}/attach-video`, videoForm);
+            await axios.post(
+              `${EXPERIENCES_API}/${newId}/attach-video`,
+              videoForm,
+            );
           } catch (videoErr) {
             console.error(videoErr);
             videoUploadFailed = true;
@@ -482,7 +495,7 @@ const ShareExperiencePage = () => {
                 {visibilityCard(
                   "public",
                   "Public",
-                  "Shown in the Interview Playbook for all visitors.",
+                  "Shown in the Interview Feed for all visitors.",
                   HiInformationCircle,
                   visibility === "public",
                 )}
