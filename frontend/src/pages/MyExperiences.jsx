@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { HiPencil, HiTrash } from "react-icons/hi";
 import { EXPERIENCES_API } from "../config/api";
 import ExperienceCard from "../components/ExperienceCard";
 import { Button } from "../components/ui/Button";
@@ -12,30 +14,66 @@ const MyExperiences = () => {
   const [experiences, setExperiences] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "null");
   const userId = user?.id ?? user?._id;
 
   useEffect(() => {
-    if (!user || !userId) {
-      navigate("/");
+    if (!userId) {
+      navigate("/", { replace: true });
       return;
     }
+
+    let cancelled = false;
 
     const load = async () => {
       try {
         setLoading(true);
+        setError(null);
         const res = await axios.get(`${EXPERIENCES_API}/user/${userId}`);
-        setExperiences(res.data);
+        if (!cancelled) setExperiences(res.data);
       } catch (err) {
         console.error(err);
-        setError("We could not load your experiences. Try again in a moment.");
+        if (!cancelled) {
+          setError("We could not load your experiences. Try again in a moment.");
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
     load();
-  }, [userId, navigate, user]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, navigate]);
+
+  const handleDeleteCard = async (expId) => {
+    if (!userId) return;
+    if (
+      !window.confirm(
+        "Delete this experience permanently? This cannot be undone.",
+      )
+    ) {
+      return;
+    }
+    try {
+      setDeletingId(expId);
+      await axios.delete(
+        `${EXPERIENCES_API}/delete/${encodeURIComponent(String(expId).trim())}`,
+        { params: { userId } },
+      );
+      setExperiences((prev) =>
+        prev.filter((e) => String(e._id) !== String(expId)),
+      );
+      toast.success("Experience deleted.");
+    } catch {
+      toast.error("Could not delete experience.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -88,7 +126,7 @@ const MyExperiences = () => {
               className="mt-8"
               onClick={() => navigate("/share")}
             >
-              Share experience
+              Add Interview
             </Button>
             <p className="mt-6 text-xs text-slate-500">
               Looking for community content?{" "}
@@ -106,6 +144,35 @@ const MyExperiences = () => {
                 theme={theme}
                 visibilityBadge={exp.visibility === "private" ? "private" : null}
                 onOpen={() => navigate(`/experience/${exp._id}`)}
+                footerActions={
+                  <>
+                    <Button
+                      type="button"
+                      theme={theme}
+                      variant="secondary"
+                      className="!gap-1.5 !py-1.5 !text-xs"
+                      onClick={() => navigate(`/experience/${exp._id}/edit`)}
+                    >
+                      <HiPencil className="h-3.5 w-3.5" />
+                      Edit
+                    </Button>
+                    <Button
+                      type="button"
+                      theme={theme}
+                      variant="secondary"
+                      disabled={deletingId === exp._id}
+                      className={`!gap-1.5 !py-1.5 !text-xs ${
+                        theme === "dark"
+                          ? "!border-red-500/40 !text-red-300"
+                          : "!border-red-200 !text-red-700"
+                      }`}
+                      onClick={() => handleDeleteCard(exp._id)}
+                    >
+                      <HiTrash className="h-3.5 w-3.5" />
+                      {deletingId === exp._id ? "Deleting…" : "Delete"}
+                    </Button>
+                  </>
+                }
               />
             ))}
           </div>
