@@ -1,6 +1,6 @@
 import axios from "axios";
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   HiDocumentAdd,
   HiCheckCircle,
@@ -84,6 +84,10 @@ function FormSection({ theme, icon: Icon, title, children }) {
 const ShareExperiencePage = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
+  const { id: editExperienceId } = useParams();
+  const isEditMode = Boolean(editExperienceId);
+  const [loadingExperience, setLoadingExperience] = useState(Boolean(editExperienceId));
+  const [loadEditError, setLoadEditError] = useState(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [company, setCompany] = useState("");
@@ -100,6 +104,84 @@ const ShareExperiencePage = () => {
   const [uploading, setUploading] = useState(false);
   const user = JSON.parse(localStorage.getItem("user") || "null");
   const userId = user?.id ?? user?._id;
+
+  useEffect(() => {
+    if (!editExperienceId) return;
+
+    if (!userId) {
+      toast.error("Sign in to edit an experience.");
+      navigate("/", { replace: true });
+      return;
+    }
+
+    let cancelled = false;
+    const load = async () => {
+      setLoadEditError(null);
+      setLoadingExperience(true);
+      try {
+        const res = await axios.get(`${EXPERIENCES_API}/${editExperienceId}`, {
+          params: { viewerId: userId },
+        });
+        if (cancelled) return;
+        const ex = res.data;
+        const owner = ex.candidateId != null ? String(ex.candidateId) : "";
+        if (owner !== String(userId)) {
+          toast.error("You can only edit your own experiences.");
+          navigate(`/experience/${editExperienceId}`, { replace: true });
+          return;
+        }
+        setTitle(ex.title || "");
+        setDescription(ex.description || "");
+        setCompany(ex.company || "");
+        setRole(ex.role || "");
+        setExperienceLevel(ex.experienceLevel || "SDE1");
+        setVisibility(ex.visibility === "private" ? "private" : "public");
+        setDetailsNotes(ex.detailsNotes || "");
+        setQuestionsNotes(ex.questionsNotes || "");
+        setTips(ex.tips || "");
+        setTipsNotes(ex.tipsNotes || "");
+        setOutcome(ex.outcome === "selected" || ex.outcome === "rejected" ? ex.outcome : "");
+
+        const details = Array.isArray(ex.interviewRoundDetails) ? ex.interviewRoundDetails : [];
+        if (details.length > 0) {
+          setRounds(
+            details.map((r) => ({
+              name: r.name || "",
+              questionsText: r.questionsText || "",
+              notes: r.notes || "",
+              preparationTips: r.preparationTips || "",
+            })),
+          );
+        } else if (Array.isArray(ex.questions) && ex.questions.length > 0) {
+          setRounds([
+            {
+              name: "",
+              questionsText: ex.questions.join("\n"),
+              notes: "",
+              preparationTips: "",
+            },
+          ]);
+        } else {
+          setRounds([emptyRound()]);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error(err);
+          setLoadEditError(
+            err.response?.status === 404
+              ? "Experience not found."
+              : "Could not load this experience for editing.",
+          );
+        }
+      } finally {
+        if (!cancelled) setLoadingExperience(false);
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [editExperienceId, userId, navigate]);
 
   const updateRound = (index, patch) => {
     setRounds((prev) => {
@@ -155,39 +237,71 @@ const ShareExperiencePage = () => {
       interviewRounds: forSubmit.length,
       tips,
     };
-    if (userId) jsonBody.candidateId = userId;
+    if (userId) {
+      if (isEditMode) jsonBody.userId = userId;
+      else jsonBody.candidateId = userId;
+    }
     if (detailsNotes) jsonBody.detailsNotes = detailsNotes;
     if (questionsNotes) jsonBody.questionsNotes = questionsNotes;
     if (tipsNotes) jsonBody.tipsNotes = tipsNotes;
     if (outcome) jsonBody.outcome = outcome;
 
     try {
-      const res = await axios.post(`${EXPERIENCES_API}`, jsonBody);
-      const newId = res.data?._id;
-      let videoUploadFailed = false;
-
-      if (file && newId) {
-        const videoForm = new FormData();
-        videoForm.append("video", file);
-        try {
-          await axios.post(`${EXPERIENCES_API}/${newId}/attach-video`, videoForm);
-        } catch (videoErr) {
-          console.error(videoErr);
-          videoUploadFailed = true;
-          toast.error(
-            publishErrorMessage(videoErr) ||
-              "Experience saved, but the video could not be uploaded.",
-          );
+      if (isEditMode) {
+        await axios.put(
+          `${EXPERIENCES_API}/update/${encodeURIComponent(String(editExperienceId).trim())}`,
+          jsonBody,
+        );
+        let videoUploadFailed = false;
+        if (file && editExperienceId) {
+          const videoForm = new FormData();
+          videoForm.append("video", file);
+          try {
+            await axios.post(
+              `${EXPERIENCES_API}/${editExperienceId}/attach-video`,
+              videoForm,
+            );
+          } catch (videoErr) {
+            console.error(videoErr);
+            videoUploadFailed = true;
+            toast.error(
+              publishErrorMessage(videoErr) ||
+                "Experience saved, but the video could not be uploaded.",
+            );
+          }
         }
-      }
-
-      if (!videoUploadFailed) {
-        toast.success("Your experience was published.");
-      }
-      if (newId) {
-        navigate(`/experience/${newId}`);
+        if (!videoUploadFailed) {
+          toast.success("Your experience was updated.");
+        }
+        navigate(`/experience/${editExperienceId}`);
       } else {
-        navigate("/");
+        const res = await axios.post(`${EXPERIENCES_API}`, jsonBody);
+        const newId = res.data?._id;
+        let videoUploadFailed = false;
+
+        if (file && newId) {
+          const videoForm = new FormData();
+          videoForm.append("video", file);
+          try {
+            await axios.post(`${EXPERIENCES_API}/${newId}/attach-video`, videoForm);
+          } catch (videoErr) {
+            console.error(videoErr);
+            videoUploadFailed = true;
+            toast.error(
+              publishErrorMessage(videoErr) ||
+                "Experience saved, but the video could not be uploaded.",
+            );
+          }
+        }
+
+        if (!videoUploadFailed) {
+          toast.success("Your experience was published.");
+        }
+        if (newId) {
+          navigate(`/experience/${newId}`);
+        } else {
+          navigate("/");
+        }
       }
     } catch (error) {
       console.error(error);
@@ -239,6 +353,36 @@ const ShareExperiencePage = () => {
     );
   };
 
+  if (isEditMode && loadingExperience) {
+    return (
+      <div
+        className={`flex min-h-screen flex-col items-center justify-center pt-20 ${pageBg(theme)}`}
+      >
+        <span className="loading loading-spinner loading-lg text-emerald-500" />
+        <p className="mt-4 text-sm text-slate-500">Loading experience…</p>
+      </div>
+    );
+  }
+
+  if (isEditMode && loadEditError) {
+    return (
+      <div className={`min-h-screen pt-24 pb-16 px-4 ${pageBg(theme)}`}>
+        <div className="mx-auto max-w-lg text-center">
+          <p className={`font-medium ${headingPage(theme)}`}>{loadEditError}</p>
+          <Button
+            theme={theme}
+            variant="secondary"
+            className="mt-6"
+            type="button"
+            onClick={() => navigate(-1)}
+          >
+            Go back
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`min-h-screen pt-20 pb-16 px-4 sm:px-8 ${pageBg(theme)}`}>
       <div className="mx-auto max-w-5xl space-y-10">
@@ -250,13 +394,14 @@ const ShareExperiencePage = () => {
             <h1
               className={`text-2xl font-bold tracking-tight sm:text-3xl ${headingPage(theme)}`}
             >
-              Share experience
+              {isEditMode ? "Edit Interview" : "Add Interview"}
             </h1>
             <p
               className={`mt-2 max-w-2xl text-sm leading-relaxed ${mutedText}`}
             >
-              Capture each round—questions, notes, and prep—plus overall tips
-              for others.
+              {isEditMode
+                ? "Update your write-up, visibility, or recording — changes apply when you save."
+                : "Capture each round—questions, notes, and prep—plus overall tips for others."}
             </p>
           </div>
         </header>
@@ -337,7 +482,7 @@ const ShareExperiencePage = () => {
                 {visibilityCard(
                   "public",
                   "Public",
-                  "Shown on the experience feed for all visitors.",
+                  "Shown in the Interview Playbook for all visitors.",
                   HiInformationCircle,
                   visibility === "public",
                 )}
@@ -359,6 +504,9 @@ const ShareExperiencePage = () => {
           >
             <p className={`text-sm ${mutedText}`}>
               MP4, MOV, or similar — a walkthrough of your interview experience.
+              {isEditMode
+                ? " Leave empty to keep your current video; choose a file only to replace it."
+                : ""}
             </p>
             <input
               type="file"
@@ -646,8 +794,10 @@ const ShareExperiencePage = () => {
               {uploading ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="loading loading-spinner loading-sm" />
-                  Publishing…
+                  {isEditMode ? "Saving…" : "Publishing…"}
                 </span>
+              ) : isEditMode ? (
+                "Save changes"
               ) : (
                 "Publish experience"
               )}

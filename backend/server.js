@@ -49,7 +49,11 @@ app.use((err, req, res, next) => {
   res.status(status).json({ error: message });
 });
 
-connectDB();
-app.listen(PORT, () => {
-  console.log(`server is running on port ${PORT}`);
-});
+async function start() {
+  await connectDB();
+  app.listen(PORT, () => {
+    console.log(`server is running on port ${PORT}`);
+  });
+}
+
+start();

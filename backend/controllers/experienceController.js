@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Experience = require("../models/experienceModel");
 const fs = require("fs/promises");
 const { getCloudinary } = require("../utils/cloudinary");
@@ -241,6 +242,186 @@ const getAllExperiences = async (req, res) => {
   }
 };
 
+/**
+ * Shared JSON validation for create / update (no file upload fields).
+ * @returns {{ error: string|null, payload: object|null }}
+ */
+function validateExperienceJsonBody(body) {
+  const {
+    title,
+    description,
+    candidate,
+    visibility,
+    company,
+    role,
+    experienceLevel,
+    interviewRounds,
+    interviewRoundDetails: interviewRoundDetailsRaw,
+    structuredRounds: structuredRoundsRaw,
+    detailsNotes,
+    questions: questionsRaw,
+    questionsNotes,
+    tips,
+    tipsNotes,
+    outcome,
+  } = body;
+
+  const expectsStructuredRounds =
+    structuredRoundsRaw === "1" ||
+    structuredRoundsRaw === "true" ||
+    structuredRoundsRaw === true;
+
+  if (!title || !String(title).trim()) {
+    return { error: "Title is required", payload: null };
+  }
+  if (!company || !String(company).trim()) {
+    return { error: "Company is required", payload: null };
+  }
+  if (!role || !String(role).trim()) {
+    return { error: "Role is required", payload: null };
+  }
+  if (!experienceLevel || !String(experienceLevel).trim()) {
+    return { error: "Experience level is required", payload: null };
+  }
+
+  const hadInterviewRoundDetailsField = hasRoundDetailsInput(interviewRoundDetailsRaw);
+
+  if (expectsStructuredRounds && !hadInterviewRoundDetailsField) {
+    return {
+      error:
+        "Server did not receive interview round data. Try again without special characters in titles, or update the server and redeploy.",
+      payload: null,
+    };
+  }
+
+  const preFilterRounds = parseInterviewRoundDetails(interviewRoundDetailsRaw);
+  if (hadInterviewRoundDetailsField && preFilterRounds.length === 0) {
+    return {
+      error:
+        "Could not parse interview rounds. Please try again, or shorten special characters in round text.",
+      payload: null,
+    };
+  }
+
+  let parsedRoundDetails = preFilterRounds.filter(
+    (r) =>
+      questionLinesFromText(r.questionsText).length > 0 ||
+      String(r.notes || "").trim() ||
+      String(r.name || "").trim() ||
+      String(r.preparationTips || "").trim()
+  );
+
+  if (hadInterviewRoundDetailsField && parsedRoundDetails.length === 0) {
+    return {
+      error:
+        "Interview rounds were empty after validation. Add at least one question line per round (or notes / round name / prep).",
+      payload: null,
+    };
+  }
+
+  const hasStructuredRounds = parsedRoundDetails.some(
+    (r) => questionLinesFromText(r.questionsText).length > 0
+  );
+
+  let questions;
+  let roundsCount;
+
+  if (hasStructuredRounds) {
+    const allQuestionLines = parsedRoundDetails.flatMap((r) =>
+      questionLinesFromText(r.questionsText)
+    );
+    if (!allQuestionLines.length) {
+      return {
+        error: "Add at least one interview question in your rounds (one per line).",
+        payload: null,
+      };
+    }
+    questions = flattenQuestionsFromRounds(parsedRoundDetails);
+    roundsCount = parsedRoundDetails.length;
+  } else if (parsedRoundDetails.length > 0) {
+    questions = parseQuestions(questionsRaw);
+    if (!questions.length) {
+      return {
+        error: "At least one interview question is required (add a line per question)",
+        payload: null,
+      };
+    }
+    roundsCount = parsedRoundDetails.length;
+  } else {
+    questions = parseQuestions(questionsRaw);
+    if (!questions.length) {
+      return {
+        error: "At least one interview question is required (add a line per question)",
+        payload: null,
+      };
+    }
+    let rounds = parseInt(interviewRounds, 10);
+    if (Number.isNaN(rounds) || rounds < 0) rounds = 1;
+    roundsCount = rounds;
+  }
+
+  const vis = visibility === "private" ? "private" : "public";
+  let outcomeVal = outcome;
+  if (outcomeVal === "" || outcomeVal === undefined) outcomeVal = undefined;
+  if (outcomeVal && !["selected", "rejected"].includes(outcomeVal)) {
+    return { error: "Invalid outcome", payload: null };
+  }
+
+  const payload = {
+    title: String(title).trim(),
+    description: description ? String(description).trim() : "",
+    candidate: candidate ? String(candidate).trim() : "Anonymous",
+    visibility: vis,
+    company: String(company).trim(),
+    role: String(role).trim(),
+    experienceLevel: String(experienceLevel).trim(),
+    interviewRounds: roundsCount,
+    questions,
+    tips: tips ? String(tips).trim() : "",
+  };
+  if (parsedRoundDetails.length > 0) {
+    payload.interviewRoundDetails = parsedRoundDetails;
+  }
+  payload.detailsNotes =
+    detailsNotes != null && String(detailsNotes).trim()
+      ? String(detailsNotes).trim()
+      : "";
+  payload.questionsNotes =
+    questionsNotes != null && String(questionsNotes).trim()
+      ? String(questionsNotes).trim()
+      : "";
+  payload.tipsNotes =
+    tipsNotes != null && String(tipsNotes).trim()
+      ? String(tipsNotes).trim()
+      : "";
+  if (outcomeVal) payload.outcome = outcomeVal;
+  else payload.outcome = undefined;
+
+  return { error: null, payload };
+}
+
+function experienceOwnerId(exp) {
+  return exp.candidateId?.toString() || exp.creatorId?.toString() || "";
+}
+
+function normalizeExperienceParamId(raw) {
+  if (raw == null) return "";
+  const s = typeof raw === "string" ? raw.trim() : String(raw).trim();
+  return s;
+}
+
+async function findExperienceByParamId(idRaw) {
+  const id = normalizeExperienceParamId(idRaw);
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+    return { error: "invalid", id: null, doc: null };
+  }
+  const doc = await Experience.findById(id).exec();
+  if (!doc) {
+    return { error: "missing", id, doc: null };
+  }
+  return { error: null, id, doc };
+}
+
 async function persistNewExperience(req, res, next, videoFile) {
   try {
     const needsCloudinary = !!videoFile;
@@ -256,120 +437,9 @@ async function persistNewExperience(req, res, next, videoFile) {
       });
     }
 
-    const {
-      title,
-      description,
-      candidate,
-      visibility,
-      candidateId,
-      company,
-      role,
-      experienceLevel,
-      interviewRounds,
-      interviewRoundDetails: interviewRoundDetailsRaw,
-      structuredRounds: structuredRoundsRaw,
-      detailsNotes,
-      questions: questionsRaw,
-      questionsNotes,
-      tips,
-      tipsNotes,
-      outcome,
-    } = req.body;
-
-    const expectsStructuredRounds =
-      structuredRoundsRaw === "1" ||
-      structuredRoundsRaw === "true" ||
-      structuredRoundsRaw === true;
-
-    if (!title || !String(title).trim()) {
-      return res.status(400).json({ error: "Title is required" });
-    }
-    if (!company || !String(company).trim()) {
-      return res.status(400).json({ error: "Company is required" });
-    }
-    if (!role || !String(role).trim()) {
-      return res.status(400).json({ error: "Role is required" });
-    }
-    if (!experienceLevel || !String(experienceLevel).trim()) {
-      return res.status(400).json({ error: "Experience level is required" });
-    }
-
-    const hadInterviewRoundDetailsField = hasRoundDetailsInput(interviewRoundDetailsRaw);
-
-    if (expectsStructuredRounds && !hadInterviewRoundDetailsField) {
-      return res.status(400).json({
-        error:
-          "Server did not receive interview round data. Try again without special characters in titles, or update the server and redeploy.",
-      });
-    }
-
-    const preFilterRounds = parseInterviewRoundDetails(interviewRoundDetailsRaw);
-    if (hadInterviewRoundDetailsField && preFilterRounds.length === 0) {
-      return res.status(400).json({
-        error:
-          "Could not parse interview rounds. Please try again, or shorten special characters in round text.",
-      });
-    }
-
-    let parsedRoundDetails = preFilterRounds.filter(
-      (r) =>
-        questionLinesFromText(r.questionsText).length > 0 ||
-        String(r.notes || "").trim() ||
-        String(r.name || "").trim() ||
-        String(r.preparationTips || "").trim()
-    );
-
-    if (hadInterviewRoundDetailsField && parsedRoundDetails.length === 0) {
-      return res.status(400).json({
-        error:
-          "Interview rounds were empty after validation. Add at least one question line per round (or notes / round name / prep).",
-      });
-    }
-
-    const hasStructuredRounds = parsedRoundDetails.some(
-      (r) => questionLinesFromText(r.questionsText).length > 0
-    );
-
-    let questions;
-    let roundsCount;
-
-    if (hasStructuredRounds) {
-      const allQuestionLines = parsedRoundDetails.flatMap((r) =>
-        questionLinesFromText(r.questionsText)
-      );
-      if (!allQuestionLines.length) {
-        return res.status(400).json({
-          error: "Add at least one interview question in your rounds (one per line).",
-        });
-      }
-      questions = flattenQuestionsFromRounds(parsedRoundDetails);
-      roundsCount = parsedRoundDetails.length;
-    } else if (parsedRoundDetails.length > 0) {
-      questions = parseQuestions(questionsRaw);
-      if (!questions.length) {
-        return res.status(400).json({
-          error: "At least one interview question is required (add a line per question)",
-        });
-      }
-      roundsCount = parsedRoundDetails.length;
-    } else {
-      questions = parseQuestions(questionsRaw);
-      if (!questions.length) {
-        return res.status(400).json({
-          error: "At least one interview question is required (add a line per question)",
-        });
-      }
-      let rounds = parseInt(interviewRounds, 10);
-      if (Number.isNaN(rounds) || rounds < 0) rounds = 1;
-      roundsCount = rounds;
-    }
-
-    let vis = visibility === "private" ? "private" : "public";
-    let outcomeVal = outcome;
-    if (outcomeVal === "" || outcomeVal === undefined) outcomeVal = undefined;
-    if (outcomeVal && !["selected", "rejected"].includes(outcomeVal)) {
-      return res.status(400).json({ error: "Invalid outcome" });
-    }
+    const v = validateExperienceJsonBody(req.body);
+    if (v.error) return res.status(400).json({ error: v.error });
+    const payload = { ...v.payload };
 
     let url;
     let thumbnail;
@@ -379,35 +449,10 @@ async function persistNewExperience(req, res, next, videoFile) {
       url = up.url;
       thumbnail = up.thumbnail;
     }
-
-    const payload = {
-      title: String(title).trim(),
-      description: description ? String(description).trim() : "",
-      candidate: candidate ? String(candidate).trim() : "Anonymous",
-      visibility: vis,
-      company: String(company).trim(),
-      role: String(role).trim(),
-      experienceLevel: String(experienceLevel).trim(),
-      interviewRounds: roundsCount,
-      questions,
-      tips: tips ? String(tips).trim() : "",
-    };
-    if (parsedRoundDetails.length > 0) {
-      payload.interviewRoundDetails = parsedRoundDetails;
-    }
-    if (detailsNotes != null && String(detailsNotes).trim()) {
-      payload.detailsNotes = String(detailsNotes).trim();
-    }
-    if (questionsNotes != null && String(questionsNotes).trim()) {
-      payload.questionsNotes = String(questionsNotes).trim();
-    }
-    if (tipsNotes != null && String(tipsNotes).trim()) {
-      payload.tipsNotes = String(tipsNotes).trim();
-    }
     if (url) payload.videoUrl = url;
     if (thumbnail) payload.thumbnail = thumbnail;
-    if (outcomeVal) payload.outcome = outcomeVal;
 
+    const { candidateId } = req.body;
     if (candidateId && String(candidateId).match(/^[0-9a-fA-F]{24}$/)) {
       payload.candidateId = candidateId;
     }
@@ -613,6 +658,82 @@ const getCandidateExperiences = async (req, res) => {
   }
 };
 
+const updateExperience = async (req, res, next) => {
+  try {
+    const { id: idParam } = req.params;
+    const userId = req.body.userId;
+    if (!userId) {
+      return res.status(400).json({ error: "userId required" });
+    }
+
+    const { error: idErr, doc: exp } = await findExperienceByParamId(idParam);
+    if (idErr === "invalid") {
+      return res.status(400).json({ message: "Invalid experience id" });
+    }
+    if (!exp) {
+      return res.status(404).json({ message: "Experience not found" });
+    }
+
+    if (experienceOwnerId(exp) !== String(userId)) {
+      return res
+        .status(403)
+        .json({ message: "You can only edit your own experiences" });
+    }
+
+    const bodyForValidation = { ...req.body };
+    delete bodyForValidation.userId;
+
+    const v = validateExperienceJsonBody(bodyForValidation);
+    if (v.error) return res.status(400).json({ error: v.error });
+
+    Object.assign(exp, v.payload);
+    if (!v.payload.outcome) {
+      exp.outcome = undefined;
+    }
+    await exp.save();
+    res.status(200).json(normalizeExperience(exp));
+  } catch (err) {
+    if (err.name === "CastError") {
+      return res.status(404).json({ message: "Experience not found" });
+    }
+    console.error(err);
+    return next(err);
+  }
+};
+
+const deleteExperience = async (req, res) => {
+  try {
+    const { id: idParam } = req.params;
+    const userId = req.query.userId || req.body?.userId;
+    if (!userId) {
+      return res.status(400).json({ message: "userId required" });
+    }
+
+    const { error: idErr, id, doc: exp } = await findExperienceByParamId(idParam);
+    if (idErr === "invalid") {
+      return res.status(400).json({ message: "Invalid experience id" });
+    }
+    if (!exp) {
+      return res.status(404).json({ message: "Experience not found" });
+    }
+
+    if (experienceOwnerId(exp) !== String(userId)) {
+      return res
+        .status(403)
+        .json({ message: "You can only delete your own experiences" });
+    }
+
+    await Experience.deleteOne({ _id: id }).exec();
+    res.status(204).send();
+  } catch (err) {
+    if (err.name === "CastError") {
+      return res.status(404).json({ message: "Experience not found" });
+    }
+    console.error(err);
+    res.status(500).json({ message: "Could not delete experience" });
+  }
+};
+
 module.exports = {
   getAllExperiences,
   shareExperience,
@@ -623,5 +744,7 @@ module.exports = {
   toggleNotHelpful,
   addDiscussionMessage,
   getCandidateExperiences,
+  updateExperience,
+  deleteExperience,
   normalizeExperience,
 };

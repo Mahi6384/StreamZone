@@ -173,14 +173,14 @@ const Navbar = () => {
             className={`${primaryButton} hidden sm:inline-flex !py-2 !text-xs sm:!text-sm`}
           >
             <HiDocumentAdd className="h-4 w-4" />
-            <span>Share experience</span>
+            <span>Add Interview</span>
           </button>
 
           <button
             type="button"
             onClick={handleShareClick}
             className={`${primaryButton} sm:hidden !p-2`}
-            title="Share experience"
+            title="Add Interview"
           >
             <HiDocumentAdd className="h-5 w-5" />
           </button>
