@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { HiThumbUp, HiThumbDown } from "react-icons/hi";
+import { HiThumbUp, HiThumbDown, HiPencil, HiTrash } from "react-icons/hi";
 import toast from "react-hot-toast";
 import { EXPERIENCES_API } from "../config/api";
 import { Button } from "./ui/Button";
@@ -81,6 +81,7 @@ const ExperienceDetail = () => {
   const [notHelpful, setNotHelpful] = useState([]);
   const [discussion, setDiscussion] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const [deleting, setDeleting] = useState(false);
   const user = JSON.parse(localStorage.getItem("user") || "null");
   const userId = user?.id ?? user?._id;
 
@@ -183,6 +184,29 @@ const ExperienceDetail = () => {
     }
   };
 
+  const handleDeleteExperience = async () => {
+    if (!userId || !id) return;
+    if (
+      !window.confirm(
+        "Delete this experience permanently? This cannot be undone.",
+      )
+    ) {
+      return;
+    }
+    try {
+      setDeleting(true);
+      await axios.delete(`${EXPERIENCES_API}/delete/${encodeURIComponent(String(id).trim())}`, {
+        params: { userId },
+      });
+      toast.success("Experience deleted.");
+      navigate("/my-experiences");
+    } catch {
+      toast.error("Could not delete experience.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div
@@ -216,6 +240,12 @@ const ExperienceDetail = () => {
 
   if (!experience) return null;
 
+  const ownerIdStr =
+    experience.candidateId != null ? String(experience.candidateId) : "";
+  const isOwner = Boolean(
+    userId && ownerIdStr && String(userId) === ownerIdStr,
+  );
+
   const videoSrc = experience.videoUrl;
   const viewerKey = userId;
   const markedHelpful = idIncluded(helpful, viewerKey);
@@ -231,7 +261,7 @@ const ExperienceDetail = () => {
           onClick={() => navigate("/")}
           className={`mb-6 text-sm font-medium text-emerald-500 hover:text-emerald-400`}
         >
-          ← Experience feed
+          ← Interview Playbook
         </button>
 
         <header className={`mb-6 rounded-2xl p-4 sm:p-5 ${panel(theme)}`}>
@@ -321,6 +351,35 @@ const ExperienceDetail = () => {
                   {notHelpful.length} not helpful
                 </button>
               </div>
+              {isOwner && (
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    theme={theme}
+                    variant="secondary"
+                    type="button"
+                    className="!gap-2"
+                    onClick={() => navigate(`/experience/${id}/edit`)}
+                  >
+                    <HiPencil className="h-4 w-4" />
+                    Edit
+                  </Button>
+                  <Button
+                    theme={theme}
+                    variant="secondary"
+                    type="button"
+                    disabled={deleting}
+                    className={`!gap-2 ${
+                      theme === "dark"
+                        ? "!border-red-500/40 !text-red-300 hover:!bg-red-950/30"
+                        : "!border-red-200 !text-red-700 hover:!bg-red-50"
+                    }`}
+                    onClick={handleDeleteExperience}
+                  >
+                    <HiTrash className="h-4 w-4" />
+                    {deleting ? "Deleting…" : "Delete"}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </header>
