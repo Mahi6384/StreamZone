@@ -31,14 +31,17 @@ import { useTheme } from "../context/ThemeContext";
 
 const PAGE_SIZE = 20;
 
-const PRESET_COMPANIES = ["Google", "Uber", "LinkedIn", "Adobe", "Oracle"];
-
-const PRESET_ROLES = [
-  "Software Engineer",
-  "Product Engineer",
-  "Security Engineer",
-  "Engineering Manager",
+const PRESET_COMPANIES = [
+  "Google",
+  "Uber",
+  "LinkedIn",
+  "Amazon",
+  "Apple",
+  "Meta",
+  "Microsoft",
 ];
+
+const PRESET_ROLES = ["Software Engineer", "Engineering Manager"];
 
 /** Matches ShareExperiencePage LEVELS for API $in filter */
 // const EXPERIENCE_LEVELS = [
@@ -145,9 +148,7 @@ const ExperienceFeed = () => {
           setTotalCount(payload.length);
         } else {
           setExperiences(Array.isArray(payload.items) ? payload.items : []);
-          setTotalCount(
-            typeof payload.total === "number" ? payload.total : 0,
-          );
+          setTotalCount(typeof payload.total === "number" ? payload.total : 0);
         }
       } catch (err) {
         console.error(err);
@@ -376,7 +377,7 @@ const ExperienceFeed = () => {
               type="submit"
               className="w-full !py-2.5 !text-sm font-semibold"
             >
-              Refine Results
+              Apply Filters
             </Button>
             <Button
               theme={theme}
@@ -529,63 +530,7 @@ const ExperienceFeed = () => {
               </ul>
             )}
           </SidebarSection>
-
-          <SidebarSection
-            theme={theme}
-            title="Level"
-            icon={
-              <span
-                className="h-1 w-1 rounded-full bg-emerald-500"
-                aria-hidden
-              />
-            }
-          >
-            <div className="mt-3 flex gap-2">
-              <input
-                type="text"
-                value={customCompany}
-                onChange={(e) => setCustomCompany(e.target.value)}
-                placeholder="Level "
-                className={`${inputCls(theme)} !py-2 text-sm`}
-                aria-label="Level"
-              />
-              <Button
-                theme={theme}
-                variant="secondary"
-                type="button"
-                onClick={addCustomCompany}
-                className="!shrink-0 !px-3 !py-2 text-xs"
-              >
-                Add
-              </Button>
-            </div>
-          </SidebarSection>
         </form>
-      </div>
-
-      <div
-        className={`relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 p-6 text-white shadow-lg shadow-emerald-900/20 ring-1 ring-emerald-500/30`}
-      >
-        <div className="relative z-10">
-          <p className="font-display text-lg font-bold leading-tight">
-            Add your interview experience
-          </p>
-          <p className="mt-1.5 text-xs leading-relaxed text-emerald-50/90">
-            Structured rounds, questions, and takeaways—video optional. Help
-            others prep faster.
-          </p>
-          <button
-            type="button"
-            onClick={() => navigate("/share")}
-            className="mt-4 rounded-lg bg-white px-4 py-2 text-xs font-bold text-emerald-800 transition hover:scale-[1.02] active:scale-[0.98]"
-          >
-            Add
-          </button>
-        </div>
-        <div
-          className="pointer-events-none absolute -bottom-10 -right-6 h-28 w-28 rounded-full bg-white/15 blur-2xl"
-          aria-hidden
-        />
       </div>
     </aside>
   );
@@ -673,7 +618,9 @@ const ExperienceFeed = () => {
                 >
                   Filters
                   {hasActiveUrlFilters ? (
-                    <span className="ml-2 text-[11px] opacity-80">(active)</span>
+                    <span className="ml-2 text-[11px] opacity-80">
+                      (active)
+                    </span>
                   ) : null}
                 </button>
               </div>
@@ -693,7 +640,11 @@ const ExperienceFeed = () => {
   const shell = (innerMain) => (
     <div className={`min-h-screen pt-20 pb-16 ${pageBg(theme)}`}>
       <div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-8 px-4 sm:px-6 lg:flex-row lg:items-start">
-        <div className="hidden lg:block">{showFiltersSidebar && sidebar}</div>
+        <div
+          className={`hidden lg:sticky lg:top-20 lg:z-10 lg:block lg:max-h-[calc(100vh-5.5rem)] lg:shrink-0 lg:overflow-y-auto lg:overflow-x-hidden lg:self-start lg:overscroll-y-contain lg:pr-1`}
+        >
+          {showFiltersSidebar && sidebar}
+        </div>
         <div className="min-w-0 flex-1">{innerMain}</div>
       </div>
 
@@ -849,9 +800,7 @@ const ExperienceFeed = () => {
               >
                 Showing{" "}
                 <span className="font-semibold text-slate-900 dark:text-slate-100">
-                  {totalCount === 0
-                    ? 0
-                    : (currentPage - 1) * PAGE_SIZE + 1}
+                  {totalCount === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1}
                 </span>
                 –
                 <span className="font-semibold text-slate-900 dark:text-slate-100">
