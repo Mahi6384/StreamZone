@@ -1,7 +1,75 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  HiDocumentAdd,
+  HiViewGrid,
+  HiAcademicCap,
+  HiLockClosed,
+} from "react-icons/hi";
 import { useTheme } from "../context/ThemeContext";
 import { pageBg, panel } from "../theme/ui";
+
+// const CORE_BLOCKS = [
+//   {
+//     title: "Capture & Share",
+//     body: "Log your interview rounds, questions, and key takeaways in minutes — no friction.",
+//     Icon: HiDocumentAdd,
+//     ring: "ring-emerald-500/30",
+//     iconBg: "bg-emerald-500/15 text-emerald-500 dark:text-emerald-400",
+//     bar: "bg-emerald-500",
+//   },
+//   {
+//     title: "Structured Insights",
+//     body: "Every interview is broken down into structured, easy-to-scan insights — no clutter.",
+//     Icon: HiViewGrid,
+//     ring: "ring-amber-500/30",
+//     iconBg: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+//     bar: "bg-amber-500",
+//   },
+//   {
+//     title: "Learn & Prepare",
+//     body: "Learn from real questions and recurring patterns across companies — not random prep.",
+//     Icon: HiAcademicCap,
+//     ring: "ring-sky-500/30",
+//     iconBg: "bg-sky-500/15 text-sky-600 dark:text-sky-400",
+//     bar: "bg-sky-500",
+//   },
+//   {
+//     title: "Private Control",
+//     body: "Stay in control. Keep entries private or share publicly — your data, your rules.",
+//     Icon: HiLockClosed,
+//     ring: "ring-violet-500/30",
+//     iconBg: "bg-violet-500/15 text-violet-600 dark:text-violet-400",
+//     bar: "bg-violet-500",
+//   },
+// ];
+
+// const CoreBlock = ({ title, body, Icon, ring, iconBg, bar, theme }) => (
+//   <div
+//     className={`relative overflow-hidden rounded-2xl p-5 ${panel(theme)} ring-1 ${ring} ${
+//       theme === "dark" ? "ring-white/5" : "ring-slate-200/80"
+//     }`}
+//   >
+//     <span className={`absolute left-0 top-0 h-full w-1 ${bar}`} />
+//     <div className="flex gap-4 pl-1">
+//       <div
+//         className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${iconBg} ring-1 ${ring}`}
+//       >
+//         <Icon className="h-5 w-5" />
+//       </div>
+//       <div className="min-w-0">
+//         <h3 className="text-base font-semibold tracking-tight">{title}</h3>
+//         <p
+//           className={`mt-2 text-sm leading-relaxed ${
+//             theme === "dark" ? "text-slate-300" : "text-slate-600"
+//           }`}
+//         >
+//           {body}
+//         </p>
+//       </div>
+//     </div>
+//   </div>
+// );
 
 const Step = ({ index, title, children, theme }) => (
   <div className={`rounded-2xl p-5 ${panel(theme)}`}>
@@ -11,7 +79,11 @@ const Step = ({ index, title, children, theme }) => (
       </div>
       <div className="min-w-0">
         <h3 className="text-base font-semibold">{title}</h3>
-        <div className={`mt-1 text-sm leading-relaxed ${theme === "dark" ? "text-slate-300" : "text-slate-600"}`}>
+        <div
+          className={`mt-1 text-sm leading-relaxed ${
+            theme === "dark" ? "text-slate-300" : "text-slate-600"
+          }`}
+        >
           {children}
         </div>
       </div>
@@ -31,106 +103,105 @@ export default function About() {
 
   return (
     <main className={`${pageBg(theme)} min-h-screen pt-20`}>
-      <div className="mx-auto max-w-6xl px-4 pb-14 sm:px-6">
-        <div className="grid gap-8 lg:grid-cols-12 lg:gap-10">
+      <div className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
+        {/* HERO */}
+        <header className="max-w-3xl">
+          <div className="flex flex-wrap gap-2">
+            <Pill>Real Questions</Pill>
+            <Pill>Proven Patterns</Pill>
+            <Pill>Faster Preparation</Pill>
+          </div>
+
+          <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+            Your Interview Advantage
+          </h1>
+          <p
+            className={`mt-4 text-base leading-relaxed sm:text-lg ${
+              theme === "dark" ? "text-slate-300" : "text-slate-600"
+            }`}
+          >
+            InsightHire helps you prepare using real interview questions, real
+            candidate strategies, and real outcomes — so you walk in ready —
+            knowing what actually gets asked.
+          </p>
+        </header>
+
+        {/* HOW IT WORKS */}
+
+        {/* MAIN GRID */}
+        <div className="mt-12 grid gap-10 lg:grid-cols-12 lg:gap-10">
           <section className="lg:col-span-7">
-            <div className="flex flex-wrap gap-2">
-              <Pill>Community-powered interview prep</Pill>
-              <Pill>Share once, help thousands</Pill>
-              <Pill>Green = growth</Pill>
-            </div>
+            <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500">
+              Built for Candidates Who Want an Edge
+            </h2>
 
-            <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
-              What is <span className="text-emerald-400">InsightHire</span>?
-            </h1>
-            <p className={`mt-4 text-base leading-relaxed ${theme === "dark" ? "text-slate-300" : "text-slate-600"}`}>
-              InsightHire is where candidates turn interview experiences into a clean, structured story — so others can
-              prepare with confidence. No fluff: rounds, questions, notes, and optional media, all in one place.
-            </p>
-
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div className={`rounded-2xl p-5 ${panel(theme)}`}>
                 <p className="text-sm font-semibold">For candidates</p>
-                <p className={`mt-1 text-sm ${theme === "dark" ? "text-slate-300" : "text-slate-600"}`}>
-                  Learn what actually gets asked. Spot patterns. Walk into interviews calmer and sharper.
+                <p className="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                  See what companies actually ask. Spot patterns early and walk
+                  into interviews prepared and confident.
                 </p>
               </div>
+
               <div className={`rounded-2xl p-5 ${panel(theme)}`}>
                 <p className="text-sm font-semibold">For the community</p>
-                <p className={`mt-1 text-sm ${theme === "dark" ? "text-slate-300" : "text-slate-600"}`}>
-                  More transparency means better prep, fewer surprises, and a fairer process for everyone.
+                <p className="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                  Turn real experiences into shared intelligence. Better prep,
+                  fewer surprises, stronger outcomes.
                 </p>
               </div>
             </div>
 
-            <div className="mt-7 flex flex-wrap items-center gap-3">
+            {/* CTA */}
+            <div className="mt-8 flex flex-wrap items-center gap-3">
               <button
-                type="button"
                 onClick={() => navigate("/share")}
-                className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-500 active:bg-emerald-700"
+                className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500"
               >
-                Share an experience
+                Add Interview
               </button>
+
               <button
-                type="button"
                 onClick={() => navigate("/")}
-                className={`inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold ring-1 transition-colors ${
-                  theme === "dark"
-                    ? "text-slate-200 ring-slate-700 hover:bg-slate-900"
-                    : "text-slate-700 ring-slate-200 hover:bg-white"
-                }`}
+                className="rounded-xl px-4 py-2.5 text-sm font-semibold ring-1 text-slate-700 dark:text-slate-200"
               >
-                Browse experiences
+                Explore Playbook
               </button>
             </div>
 
-            <div className={`mt-8 rounded-2xl p-5 ${panel(theme)}`}>
-              <h2 className="text-base font-semibold">What we’ll ask when you share</h2>
-              <p className={`mt-2 text-sm ${theme === "dark" ? "text-slate-300" : "text-slate-600"}`}>
-                You stay in control. Share only what you’re comfortable with. The goal is clarity, not oversharing.
+            {/* FINAL HOOK */}
+            <div className={`mt-10 rounded-2xl p-6 ${panel(theme)}`}>
+              <h2 className="text-lg font-semibold">
+                Stop Guessing. Start Preparing.
+              </h2>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                Interviews shouldn’t feel unpredictable. InsightHire gives you
+                the clarity, patterns, and real questions you need to perform
+                with confidence.
               </p>
-              <ul className={`mt-4 grid gap-2 text-sm ${theme === "dark" ? "text-slate-300" : "text-slate-600"}`}>
-                <li>
-                  <span className="font-semibold text-emerald-400">Required</span>: company, role, experience level,
-                  title, and at least one question.
-                </li>
-                <li>
-                  <span className="font-semibold text-emerald-400">Optional</span>: notes (what helped, what surprised
-                  you), tips, outcome, images, and video.
-                </li>
-                <li>
-                  <span className="font-semibold text-emerald-400">Visibility</span>: choose Public or Private.
-                </li>
-              </ul>
             </div>
           </section>
 
+          {/* RIGHT SIDE */}
           <aside className="lg:col-span-5">
-            <div className="sticky top-24 space-y-4">
-              <Step index={1} title="Write the story in 2 minutes" theme={theme}>
-                Add the rounds, the questions asked, and quick notes. Don’t worry about perfect formatting.
-              </Step>
-              <Step index={2} title="Attach proof (optional)" theme={theme}>
-                Upload a short clip or screenshots of prep notes. If you skip media, your post is still valuable.
-              </Step>
-              <Step index={3} title="Help others, instantly" theme={theme}>
-                Your experience becomes searchable — by company, role, and level — so others can learn fast.
+            <h2 className="mb-4 text-sm font-bold uppercase tracking-widest text-slate-500">
+              Your path
+            </h2>
+
+            <div className="space-y-4">
+              <Step index={1} title="Capture Your Interview" theme={theme}>
+                Add rounds, questions, and key takeaways. Keep it simple.
               </Step>
 
-              <div className={`rounded-2xl p-5 ${panel(theme)}`}>
-                <h3 className="text-base font-semibold">Privacy & safety</h3>
-                <ul className={`mt-3 space-y-2 text-sm ${theme === "dark" ? "text-slate-300" : "text-slate-600"}`}>
-                  <li>
-                    - Avoid sharing confidential documents, internal links, or private candidate info.
-                  </li>
-                  <li>
-                    - Keep it about the process: rounds, questions, what worked, what didn’t.
-                  </li>
-                  <li>
-                    - You can choose <span className="font-semibold text-emerald-400">Private</span> visibility anytime.
-                  </li>
-                </ul>
-              </div>
+              <Step index={2} title="Add Proof (Optional)" theme={theme}>
+                Attach screenshots or notes to increase credibility.
+              </Step>
+
+              <Step index={3} title="Help Others Prepare" theme={theme}>
+                Your insights become searchable and help others crack interviews
+                faster.
+              </Step>
             </div>
           </aside>
         </div>
@@ -138,4 +209,3 @@ export default function About() {
     </main>
   );
 }
-
