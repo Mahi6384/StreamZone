@@ -38,6 +38,13 @@ router.post("/:id/discussion", addDiscussionMessage);
 router.patch("/update/:id", updateExperience);
 router.put("/update/:id", updateExperience);
 router.delete("/delete/:id", deleteExperience);
+/**
+ * Backwards-compatible aliases (some clients call `/:id` for edit/delete).
+ * Method-specific routing keeps `GET /:id` working.
+ */
+router.patch("/:id", updateExperience);
+router.put("/:id", updateExperience);
+router.delete("/:id", deleteExperience);
 router.get("/:id", getExperienceById);
 
 module.exports = router;
