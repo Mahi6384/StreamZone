@@ -7,7 +7,14 @@ import React, {
 } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
-import { HiX, HiCollection, HiSearch, HiCheck } from "react-icons/hi";
+import {
+  HiX,
+  HiCollection,
+  HiSearch,
+  HiCheck,
+  HiChevronLeft,
+  HiChevronRight,
+} from "react-icons/hi";
 import { EXPERIENCES_API } from "../config/api";
 import ExperienceCard from "./ExperienceCard";
 import { Button } from "./ui/Button";
@@ -18,17 +25,23 @@ import {
   inputCls,
   headingPage,
   linkButton,
+  ghostButton,
 } from "../theme/ui";
 import { useTheme } from "../context/ThemeContext";
 
-const PRESET_COMPANIES = ["Google", "Uber", "LinkedIn", "Adobe", "Oracle"];
+const PAGE_SIZE = 20;
 
-const PRESET_ROLES = [
-  "Software Engineer",
-  "Product Engineer",
-  "Security Engineer",
-  "Engineering Manager",
+const PRESET_COMPANIES = [
+  "Google",
+  "Uber",
+  "LinkedIn",
+  "Amazon",
+  "Apple",
+  "Meta",
+  "Microsoft",
 ];
+
+const PRESET_ROLES = ["Software Engineer", "Engineering Manager"];
 
 /** Matches ShareExperiencePage LEVELS for API $in filter */
 // const EXPERIENCE_LEVELS = [
@@ -78,6 +91,7 @@ function SidebarSection({ theme, title, icon, children }) {
 
 const ExperienceFeed = () => {
   const [experiences, setExperiences] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -85,6 +99,8 @@ const ExperienceFeed = () => {
   const locationRef = useRef(location);
   locationRef.current = location;
   const { theme } = useTheme();
+
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const searchParams = useMemo(
     () => new URLSearchParams(location.search),
@@ -107,10 +123,18 @@ const ExperienceFeed = () => {
     setDraftSearch(sp.get("search") || "");
   }, [location.search]);
 
+  const currentPage = useMemo(() => {
+    const raw = searchParams.get("page");
+    const n = parseInt(String(raw || "1"), 10);
+    return Math.max(1, Number.isFinite(n) ? n : 1);
+  }, [searchParams]);
+
   const fetchUrl = useMemo(() => {
-    const q = location.search.replace(/^\?/, "");
-    return q ? `${EXPERIENCES_API}?${q}` : EXPERIENCES_API;
-  }, [location.search]);
+    const sp = new URLSearchParams(location.search);
+    sp.set("limit", String(PAGE_SIZE));
+    sp.set("page", String(currentPage));
+    return `${EXPERIENCES_API}?${sp.toString()}`;
+  }, [location.search, currentPage]);
 
   useEffect(() => {
     const fetchExperiences = async () => {
@@ -118,9 +142,18 @@ const ExperienceFeed = () => {
         setLoading(true);
         setError(null);
         const res = await axios.get(fetchUrl);
-        setExperiences(res.data);
+        const payload = res.data;
+        if (Array.isArray(payload)) {
+          setExperiences(payload);
+          setTotalCount(payload.length);
+        } else {
+          setExperiences(Array.isArray(payload.items) ? payload.items : []);
+          setTotalCount(typeof payload.total === "number" ? payload.total : 0);
+        }
       } catch (err) {
         console.error(err);
+        setExperiences([]);
+        setTotalCount(0);
         setError(
           "We could not load the feed. Check your connection and try again.",
         );
@@ -131,6 +164,38 @@ const ExperienceFeed = () => {
     fetchExperiences();
   }, [fetchUrl]);
 
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil(totalCount / PAGE_SIZE)),
+    [totalCount],
+  );
+
+  const goToPage = useCallback(
+    (next) => {
+      const p = Math.max(1, Math.min(totalPages, next));
+      const sp = new URLSearchParams(locationRef.current.search);
+      if (p <= 1) sp.delete("page");
+      else sp.set("page", String(p));
+      const qs = sp.toString();
+      navigate(qs ? `/?${qs}` : "/");
+    },
+    [navigate, totalPages],
+  );
+
+  useEffect(() => {
+    if (loading) return;
+    if (totalCount <= 0) return;
+    if (currentPage > totalPages) {
+      const sp = new URLSearchParams(location.search);
+      sp.set("page", String(totalPages));
+      const qs = sp.toString();
+      navigate(qs ? `/?${qs}` : "/", { replace: true });
+    }
+  }, [loading, totalCount, currentPage, totalPages, location.search, navigate]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentPage]);
+
   /** Keep search in sync with the URL without requiring Apply (preserves other query params). */
   useEffect(() => {
     const t = setTimeout(() => {
@@ -140,6 +205,7 @@ const ExperienceFeed = () => {
       if (next === cur) return;
       if (next) sp.set("search", next);
       else sp.delete("search");
+      sp.delete("page");
       const qs = sp.toString();
       navigate(qs ? `/?${qs}` : "/", { replace: true });
     }, 380);
@@ -151,6 +217,7 @@ const ExperienceFeed = () => {
     const next = draftSearch.trim();
     if (next) sp.set("search", next);
     else sp.delete("search");
+    sp.delete("page");
     const qs = sp.toString();
     navigate(qs ? `/?${qs}` : "/", { replace: true });
   }, [draftSearch, navigate]);
@@ -206,6 +273,15 @@ const ExperienceFeed = () => {
     Boolean(draftSearch.trim());
 
   const showFiltersSidebar = true;
+
+  useEffect(() => {
+    if (!filtersOpen) return;
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") setFiltersOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [filtersOpen]);
 
   const chipBase = (active) =>
     `inline-flex cursor-pointer items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${
@@ -301,7 +377,7 @@ const ExperienceFeed = () => {
               type="submit"
               className="w-full !py-2.5 !text-sm font-semibold"
             >
-              Refine Results
+              Apply Filters
             </Button>
             <Button
               theme={theme}
@@ -454,63 +530,7 @@ const ExperienceFeed = () => {
               </ul>
             )}
           </SidebarSection>
-
-          <SidebarSection
-            theme={theme}
-            title="Level"
-            icon={
-              <span
-                className="h-1 w-1 rounded-full bg-emerald-500"
-                aria-hidden
-              />
-            }
-          >
-            <div className="mt-3 flex gap-2">
-              <input
-                type="text"
-                value={customCompany}
-                onChange={(e) => setCustomCompany(e.target.value)}
-                placeholder="Level "
-                className={`${inputCls(theme)} !py-2 text-sm`}
-                aria-label="Level"
-              />
-              <Button
-                theme={theme}
-                variant="secondary"
-                type="button"
-                onClick={addCustomCompany}
-                className="!shrink-0 !px-3 !py-2 text-xs"
-              >
-                Add
-              </Button>
-            </div>
-          </SidebarSection>
         </form>
-      </div>
-
-      <div
-        className={`relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 p-6 text-white shadow-lg shadow-emerald-900/20 ring-1 ring-emerald-500/30`}
-      >
-        <div className="relative z-10">
-          <p className="font-display text-lg font-bold leading-tight">
-            Add your interview experience
-          </p>
-          <p className="mt-1.5 text-xs leading-relaxed text-emerald-50/90">
-            Structured rounds, questions, and takeaways—video optional. Help
-            others prep faster.
-          </p>
-          <button
-            type="button"
-            onClick={() => navigate("/share")}
-            className="mt-4 rounded-lg bg-white px-4 py-2 text-xs font-bold text-emerald-800 transition hover:scale-[1.02] active:scale-[0.98]"
-          >
-            Add
-          </button>
-        </div>
-        <div
-          className="pointer-events-none absolute -bottom-10 -right-6 h-28 w-28 rounded-full bg-white/15 blur-2xl"
-          aria-hidden
-        />
       </div>
     </aside>
   );
@@ -588,18 +608,87 @@ const ExperienceFeed = () => {
                 className={`${inputCls(theme)} !border-slate-200/90 !py-2.5 !pl-10 dark:!border-slate-600`}
               />
             </div>
+
+            {showFiltersSidebar ? (
+              <div className="mt-3 flex lg:hidden">
+                <button
+                  type="button"
+                  onClick={() => setFiltersOpen(true)}
+                  className={`${linkButton} inline-flex items-center`}
+                >
+                  Filters
+                  {hasActiveUrlFilters ? (
+                    <span className="ml-2 text-[11px] opacity-80">
+                      (active)
+                    </span>
+                  ) : null}
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
       </header>
     );
-  }, [theme, hasActiveUrlFilters, draftSearch, commitSearchNow]);
+  }, [
+    theme,
+    hasActiveUrlFilters,
+    draftSearch,
+    commitSearchNow,
+    showFiltersSidebar,
+  ]);
 
   const shell = (innerMain) => (
     <div className={`min-h-screen pt-20 pb-16 ${pageBg(theme)}`}>
       <div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-8 px-4 sm:px-6 lg:flex-row lg:items-start">
-        {showFiltersSidebar && sidebar}
+        <div
+          className={`hidden lg:sticky lg:top-20 lg:z-10 lg:block lg:max-h-[calc(100vh-5.5rem)] lg:shrink-0 lg:overflow-y-auto lg:overflow-x-hidden lg:self-start lg:overscroll-y-contain lg:pr-1`}
+        >
+          {showFiltersSidebar && sidebar}
+        </div>
         <div className="min-w-0 flex-1">{innerMain}</div>
       </div>
+
+      {showFiltersSidebar && filtersOpen ? (
+        <div className="fixed inset-0 z-[120] lg:hidden">
+          <button
+            type="button"
+            aria-label="Close filters"
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setFiltersOpen(false)}
+          />
+
+          <div className="absolute right-0 top-0 h-full w-[92vw] max-w-sm overflow-y-auto p-4">
+            <div
+              className={`${panel(theme)} overflow-hidden rounded-2xl shadow-lg ring-1 ${
+                theme === "dark" ? "ring-white/10" : "ring-slate-200"
+              }`}
+            >
+              <div
+                className={`flex items-center justify-between gap-3 border-b px-4 py-3 ${
+                  theme === "dark" ? "border-slate-700/80" : "border-slate-200"
+                }`}
+              >
+                <p
+                  className={`text-sm font-semibold ${
+                    theme === "dark" ? "text-slate-100" : "text-slate-900"
+                  }`}
+                >
+                  Filters
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setFiltersOpen(false)}
+                  className="rounded-lg p-2 hover:bg-slate-500/10"
+                  aria-label="Close"
+                >
+                  <HiX className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="p-4">{sidebar}</div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 
@@ -637,7 +726,7 @@ const ExperienceFeed = () => {
     <>
       {mainHeader}
 
-      {!experiences || experiences.length === 0 ? (
+      {totalCount === 0 ? (
         <div
           className={`rounded-2xl p-8 text-center sm:p-10 ${panelEmpty(theme)}`}
         >
@@ -675,17 +764,82 @@ const ExperienceFeed = () => {
               Updating results…
             </p>
           )}
-          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-4">
-            {experiences.map((exp) => (
-              <ExperienceCard
-                key={exp._id}
-                exp={exp}
-                theme={theme}
-                layout="feed"
-                onOpen={() => navigate(`/experience/${exp._id}`)}
-              />
-            ))}
-          </div>
+          {experiences.length === 0 ? (
+            <p
+              className={`py-12 text-center text-sm ${
+                theme === "dark" ? "text-slate-400" : "text-slate-600"
+              }`}
+            >
+              Loading this page…
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-4">
+              {experiences.map((exp) => (
+                <ExperienceCard
+                  key={exp._id}
+                  exp={exp}
+                  theme={theme}
+                  layout="feed"
+                  onOpen={() => navigate(`/experience/${exp._id}`)}
+                />
+              ))}
+            </div>
+          )}
+
+          {totalPages > 1 ? (
+            <nav
+              className={`mt-8 flex flex-col items-stretch gap-4 border-t pt-6 sm:flex-row sm:items-center sm:justify-between ${
+                theme === "dark" ? "border-slate-700/80" : "border-slate-200"
+              }`}
+              aria-label="Pagination"
+            >
+              <p
+                className={`text-center text-sm sm:text-left ${
+                  theme === "dark" ? "text-slate-400" : "text-slate-600"
+                }`}
+              >
+                Showing{" "}
+                <span className="font-semibold text-slate-900 dark:text-slate-100">
+                  {totalCount === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1}
+                </span>
+                –
+                <span className="font-semibold text-slate-900 dark:text-slate-100">
+                  {Math.min(currentPage * PAGE_SIZE, totalCount)}
+                </span>{" "}
+                of{" "}
+                <span className="font-semibold text-slate-900 dark:text-slate-100">
+                  {totalCount}
+                </span>
+              </p>
+              <div className="flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  disabled={currentPage <= 1 || loading}
+                  onClick={() => goToPage(currentPage - 1)}
+                  className={`${ghostButton(theme)} inline-flex items-center gap-1 !px-3 !py-2 text-sm font-medium disabled:pointer-events-none disabled:opacity-40`}
+                >
+                  <HiChevronLeft className="h-4 w-4" aria-hidden />
+                  Previous
+                </button>
+                <span
+                  className={`min-w-[5.5rem] text-center text-sm tabular-nums ${
+                    theme === "dark" ? "text-slate-300" : "text-slate-700"
+                  }`}
+                >
+                  Page {currentPage} / {totalPages}
+                </span>
+                <button
+                  type="button"
+                  disabled={currentPage >= totalPages || loading}
+                  onClick={() => goToPage(currentPage + 1)}
+                  className={`${ghostButton(theme)} inline-flex items-center gap-1 !px-3 !py-2 text-sm font-medium disabled:pointer-events-none disabled:opacity-40`}
+                >
+                  Next
+                  <HiChevronRight className="h-4 w-4" aria-hidden />
+                </button>
+              </div>
+            </nav>
+          ) : null}
         </>
       )}
     </>,
