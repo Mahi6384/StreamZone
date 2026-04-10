@@ -12,9 +12,7 @@ import {
   HiCollection,
   HiSearch,
   HiCheck,
-  HiLightningBolt,
 } from "react-icons/hi";
-import { MdFilterList } from "react-icons/md";
 import { EXPERIENCES_API } from "../config/api";
 import ExperienceCard from "./ExperienceCard";
 import { Button } from "./ui/Button";
@@ -25,7 +23,6 @@ import {
   inputCls,
   headingPage,
   linkButton,
-  selectCls,
 } from "../theme/ui";
 import { useTheme } from "../context/ThemeContext";
 

@@ -1,11 +1,5 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  HiDocumentAdd,
-  HiViewGrid,
-  HiAcademicCap,
-  HiLockClosed,
-} from "react-icons/hi";
 import { useTheme } from "../context/ThemeContext";
 import { pageBg, panel } from "../theme/ui";
 
