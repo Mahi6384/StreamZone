@@ -12,7 +12,7 @@ function roundsLabel(n) {
 }
 
 /**
- * Playbook row: accent bar, optional video poster only when a recording exists.
+ * Feed row: accent bar, optional video poster only when a recording exists.
  */
 export default function ExperienceCard({
   exp,

@@ -195,9 +195,12 @@ const ExperienceDetail = () => {
     }
     try {
       setDeleting(true);
-      await axios.delete(`${EXPERIENCES_API}/delete/${encodeURIComponent(String(id).trim())}`, {
-        params: { userId },
-      });
+      await axios.delete(
+        `${EXPERIENCES_API}/delete/${encodeURIComponent(String(id).trim())}`,
+        {
+          params: { userId },
+        },
+      );
       toast.success("Experience deleted.");
       navigate("/my-experiences");
     } catch {
@@ -261,7 +264,7 @@ const ExperienceDetail = () => {
           onClick={() => navigate("/")}
           className={`mb-6 text-sm font-medium text-emerald-500 hover:text-emerald-400`}
         >
-          ← Interview Playbook
+          ← Back to Feed
         </button>
 
         <header className={`mb-6 rounded-2xl p-4 sm:p-5 ${panel(theme)}`}>

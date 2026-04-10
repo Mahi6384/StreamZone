@@ -7,12 +7,7 @@ import React, {
 } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
-import {
-  HiX,
-  HiCollection,
-  HiSearch,
-  HiCheck,
-} from "react-icons/hi";
+import { HiX, HiCollection, HiSearch, HiCheck } from "react-icons/hi";
 import { EXPERIENCES_API } from "../config/api";
 import ExperienceCard from "./ExperienceCard";
 import { Button } from "./ui/Button";
@@ -127,7 +122,7 @@ const ExperienceFeed = () => {
       } catch (err) {
         console.error(err);
         setError(
-          "We could not load the playbook. Check your connection and try again.",
+          "We could not load the feed. Check your connection and try again.",
         );
       } finally {
         setLoading(false);
@@ -569,7 +564,7 @@ const ExperienceFeed = () => {
           </div>
           <div className="w-full shrink-0 lg:max-w-sm">
             <label className="sr-only" htmlFor="feed-search">
-              Search playbook
+              Search feed
             </label>
             <div className="relative">
               <HiSearch
@@ -612,7 +607,7 @@ const ExperienceFeed = () => {
     return shell(
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4">
         <span className="loading loading-spinner loading-lg text-emerald-500" />
-        <p className="text-sm text-slate-500">Loading playbook…</p>
+        <p className="text-sm text-slate-500">Loading feed…</p>
       </div>,
     );
   }

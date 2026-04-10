@@ -160,7 +160,7 @@ export default function About() {
                 onClick={() => navigate("/")}
                 className="rounded-xl px-4 py-2.5 text-sm font-semibold ring-1 text-slate-700 dark:text-slate-200"
               >
-                Explore Playbook
+                Explore Feed
               </button>
             </div>
 
