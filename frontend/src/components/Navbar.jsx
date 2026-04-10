@@ -261,7 +261,7 @@ const Navbar = () => {
                         : "hover:bg-slate-100"
                     }`}
                   >
-                    Your Interview Advantage
+                    What is InsightHire?
                     <span className="text-xs opacity-60">↗</span>
                   </button>
 
