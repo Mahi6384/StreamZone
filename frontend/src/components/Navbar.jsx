@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthModal from "./AuthModal";
-import { HiDocumentAdd, HiHome, HiUserCircle } from "react-icons/hi";
+import { HiDocumentAdd, HiHome, HiUserCircle, HiMenu, HiX } from "react-icons/hi";
 import { navBg, ghostButton, primaryButton } from "../theme/ui";
 import { useTheme } from "../context/ThemeContext";
 
@@ -13,6 +13,8 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const accountRef = useRef(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const mobileMenuRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 12);
@@ -46,6 +48,27 @@ const Navbar = () => {
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [isAccountOpen]);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+
+    const onDocMouseDown = (e) => {
+      if (!mobileMenuRef.current) return;
+      if (mobileMenuRef.current.contains(e.target)) return;
+      setIsMobileMenuOpen(false);
+    };
+
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") setIsMobileMenuOpen(false);
+    };
+
+    document.addEventListener("mousedown", onDocMouseDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onDocMouseDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isMobileMenuOpen]);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -96,6 +119,86 @@ const Navbar = () => {
         </div>
 
         <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">
+          <div ref={mobileMenuRef} className="relative sm:hidden">
+            <button
+              type="button"
+              className={`${ghostButton(theme)} inline-flex items-center justify-center !p-2`}
+              aria-label="Open menu"
+              aria-haspopup="menu"
+              aria-expanded={isMobileMenuOpen}
+              onClick={() => setIsMobileMenuOpen((v) => !v)}
+              title="Menu"
+            >
+              {isMobileMenuOpen ? (
+                <HiX className="h-5 w-5" aria-hidden />
+              ) : (
+                <HiMenu className="h-5 w-5" aria-hidden />
+              )}
+            </button>
+
+            {isMobileMenuOpen ? (
+              <div
+                role="menu"
+                className={`absolute right-0 top-full z-[120] mt-2 w-64 overflow-hidden rounded-xl border shadow-lg ${
+                  theme === "dark"
+                    ? "border-slate-700 bg-slate-900 text-slate-100"
+                    : "border-slate-200 bg-white text-slate-900"
+                }`}
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    navigate("/about");
+                  }}
+                  className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium ${
+                    theme === "dark" ? "hover:bg-slate-800" : "hover:bg-slate-50"
+                  }`}
+                >
+                  What is InsightHire?
+                  <span className="text-xs opacity-60">↗</span>
+                </button>
+
+                {user ? (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      navigate("/my-experiences");
+                    }}
+                    className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium ${
+                      theme === "dark"
+                        ? "hover:bg-slate-800"
+                        : "hover:bg-slate-50"
+                    }`}
+                  >
+                    My experiences
+                    <HiUserCircle className="opacity-60" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setIsAuthModalOpen(true);
+                    }}
+                    className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium ${
+                      theme === "dark"
+                        ? "hover:bg-slate-800"
+                        : "hover:bg-slate-50"
+                    }`}
+                  >
+                    Sign in
+                    <span className="text-xs opacity-60">↗</span>
+                  </button>
+                )}
+              </div>
+            ) : null}
+          </div>
+
           <button
             type="button"
             onClick={() => navigate("/")}
