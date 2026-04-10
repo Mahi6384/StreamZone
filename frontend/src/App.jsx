@@ -27,6 +27,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/share" element={<ShareExperiencePage />} />
+          <Route path="/experience/:id/edit" element={<ShareExperiencePage />} />
           <Route path="/upload" element={<Navigate to="/share" replace />} />
           <Route path="/experience/:id" element={<ExperienceDetail />} />
           <Route path="/watch/:id" element={<LegacyWatchRedirect />} />
