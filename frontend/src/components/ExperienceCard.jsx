@@ -47,6 +47,7 @@ export default function ExperienceCard({
           onOpen();
         }
       }}
+      aria-label={`View ${company} interview experience${role ? ` — ${role}` : ""}`}
       className={`${panel(theme)} relative cursor-pointer overflow-hidden rounded-2xl transition-all duration-200
         hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/45 focus-visible:ring-offset-2 ${ringOffset}
         ${
@@ -73,6 +74,10 @@ export default function ExperienceCard({
               <img
                 src={exp.thumbnail || FALLBACK_THUMB}
                 alt=""
+                role="presentation"
+                width={144}
+                height={81}
+                loading="lazy"
                 className="h-full w-full object-cover"
                 onError={(e) => {
                   e.target.onerror = null;
@@ -206,11 +211,11 @@ export default function ExperienceCard({
                 {exp.candidate || "Anonymous"}
               </span>
             </span>
-            <span className="shrink-0 tabular-nums">
-              {helpfulCount === 1
-                ? "1 found helpful"
-                : `${helpfulCount} found helpful`}
-            </span>
+            {helpfulCount >= 1 && (
+              <span className="shrink-0 tabular-nums">
+                {helpfulCount === 1 ? "1 found helpful" : `${helpfulCount} found helpful`}
+              </span>
+            )}
           </div>
         </div>
       </div>
