@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Dark background circle -->
+  <rect width="64" height="64" rx="14" fill="#0f172a"/>
+  <!-- Emerald accent bar (left edge) -->
+  <rect x="10" y="14" width="4" height="36" rx="2" fill="#10b981"/>
+  <!-- "I" letter -->
+  <rect x="20" y="14" width="5" height="36" rx="2" fill="#f1f5f9"/>
+  <!-- "H" letter - left stem -->
+  <rect x="31" y="14" width="5" height="36" rx="2" fill="#f1f5f9"/>
+  <!-- "H" letter - crossbar -->
+  <rect x="31" y="27" width="18" height="5" rx="2" fill="#f1f5f9"/>
+  <!-- "H" letter - right stem -->
+  <rect x="44" y="14" width="5" height="36" rx="2" fill="#f1f5f9"/>
+</svg>
