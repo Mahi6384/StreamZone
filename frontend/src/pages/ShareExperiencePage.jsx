@@ -1,5 +1,6 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   HiDocumentAdd,
@@ -398,6 +399,10 @@ const ShareExperiencePage = () => {
 
   return (
     <div className={`min-h-screen pt-20 pb-16 px-4 sm:px-8 ${pageBg(theme)}`}>
+      <Helmet>
+        <title>{isEditMode ? "Edit Interview" : "Add Interview"} — InsightHire</title>
+        <meta name="robots" content="noindex" />
+      </Helmet>
       <div className="mx-auto max-w-5xl space-y-10">
         <header className="flex gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/25">

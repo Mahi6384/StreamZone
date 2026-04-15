@@ -1,3 +1,6 @@
-# https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /my-experiences
+Disallow: /share
+
+Sitemap: https://insight-hire-ten.vercel.app/sitemap.xml

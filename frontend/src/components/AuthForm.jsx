@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { ensureGoogleIdInitialized, requestGoogleOneTap } from "../utils/googleIdentity";
 import {
   pageBg,
   panel,
@@ -20,6 +21,7 @@ const AuthForm = ({ title, buttonText, showName, onClose }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const googleBusyRef = useRef(false);
   const navigate = useNavigate();
   const { theme } = useTheme();
 
@@ -41,6 +43,7 @@ const AuthForm = ({ title, buttonText, showName, onClose }) => {
   };
 
   const handleGoogle = async () => {
+    if (googleBusyRef.current) return;
     const clientId = getGoogleClientId();
     if (!clientId) {
       toast.error("Google sign-in is not configured: missing REACT_APP_GOOGLE_CLIENT_ID");
@@ -51,29 +54,50 @@ const AuthForm = ({ title, buttonText, showName, onClose }) => {
       return;
     }
 
-    window.google.accounts.id.initialize({
-      client_id: clientId,
-      callback: async (response) => {
-        try {
-          const res = await axios.post(`${USERS_API}/google`, {
-            credential: response.credential,
-          });
-          localStorage.setItem("user", JSON.stringify(res.data.user));
-          toast.success("Signed in with Google.");
-          if (onClose) onClose();
-          navigate("/");
-        } catch (error) {
-          const errorMessage = error.response?.data?.message || "Google authentication failed";
-          toast.error(errorMessage);
-        }
-      },
-    });
+    if (!ensureGoogleIdInitialized(clientId)) {
+      toast.error("Google sign-in failed to load. Please refresh and try again.");
+      return;
+    }
 
-    window.google.accounts.id.prompt((notification) => {
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        toast.error("Google sign-in was blocked or closed. Please try again.");
+    googleBusyRef.current = true;
+
+    const onCredential = async (response) => {
+      try {
+        if (!response?.credential) {
+          toast.error("Google did not return a sign-in token. Please try again.");
+          return;
+        }
+        const res = await axios.post(`${USERS_API}/google`, {
+          credential: response.credential,
+        });
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        toast.success("Signed in with Google.");
+        if (onClose) onClose();
+        navigate("/");
+      } catch (error) {
+        const errorMessage = error.response?.data?.message || "Google authentication failed";
+        toast.error(errorMessage);
+      } finally {
+        googleBusyRef.current = false;
       }
-    });
+    };
+
+    try {
+      requestGoogleOneTap(onCredential, {
+        onPromptBlocked: () => {
+          googleBusyRef.current = false;
+          toast.error("Google sign-in was blocked or closed. Please try again.", {
+            id: "google-sign-in-prompt-blocked",
+          });
+        },
+        onDismissed: () => {
+          googleBusyRef.current = false;
+        },
+      });
+    } catch {
+      googleBusyRef.current = false;
+      toast.error("Google sign-in failed to start. Please try again.");
+    }
   };
 
   const inModal = Boolean(onClose);

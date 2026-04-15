@@ -139,7 +139,7 @@ const Navbar = () => {
             {isMobileMenuOpen ? (
               <div
                 role="menu"
-                className={`absolute right-0 top-full z-[120] mt-2 w-64 overflow-hidden rounded-xl border shadow-lg ${
+                className={`absolute left-0 top-full z-[120] mt-2 w-56 max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-xl border shadow-lg ${
                   theme === "dark"
                     ? "border-slate-700 bg-slate-900 text-slate-100"
                     : "border-slate-200 bg-white text-slate-900"
@@ -316,7 +316,9 @@ const Navbar = () => {
                 </span>
                 <div className="h-9 w-9 overflow-hidden rounded-full border border-slate-600 bg-slate-800">
                   <img
-                    alt=""
+                    alt={`${user?.name || "User"} avatar`}
+                    width={36}
+                    height={36}
                     src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || "User")}&background=334155&color=e2e8f0`}
                     className="h-full w-full object-cover"
                   />
