@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -86,6 +87,10 @@ const MyExperiences = () => {
 
   return (
     <div className={`min-h-screen pt-20 pb-14 px-4 sm:px-6 ${pageBg(theme)}`}>
+      <Helmet>
+        <title>My Experiences — InsightHire</title>
+        <meta name="robots" content="noindex" />
+      </Helmet>
       <div className="mx-auto max-w-6xl">
         <div className="mb-8 text-center sm:text-left">
           <h1 className={`text-xl font-bold tracking-tight sm:text-2xl ${headingPage(theme)}`}>

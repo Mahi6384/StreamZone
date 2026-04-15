@@ -1,4 +1,5 @@
 import React from "react";
+import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
 import { pageBg, panel } from "../theme/ui";
@@ -97,6 +98,10 @@ export default function About() {
 
   return (
     <main className={`${pageBg(theme)} min-h-screen pt-20`}>
+      <Helmet>
+        <title>About InsightHire — Interview Prep with Real Questions</title>
+        <meta name="description" content="InsightHire helps you prepare for interviews using real questions and strategies shared by candidates. See what companies actually ask — not guesswork." />
+      </Helmet>
       <div className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
         {/* HERO */}
         <header className="max-w-3xl">

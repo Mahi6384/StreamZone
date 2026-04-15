@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Helmet } from "react-helmet-async";
 import { HiThumbUp, HiThumbDown, HiPencil, HiTrash } from "react-icons/hi";
 import toast from "react-hot-toast";
 import { EXPERIENCES_API } from "../config/api";
@@ -258,6 +259,13 @@ const ExperienceDetail = () => {
 
   return (
     <div className={`min-h-screen pt-20 pb-14 px-4 sm:px-6 ${pageBg(theme)}`}>
+      <Helmet>
+        <title>{company}{role ? ` — ${role}` : ""} Interview Experience — InsightHire</title>
+        <meta
+          name="description"
+          content={`Real ${company}${role ? ` ${role}` : ""} interview experience: questions asked, tips, and preparation strategies shared by a candidate.`}
+        />
+      </Helmet>
       <div className="mx-auto max-w-7xl">
         <button
           type="button"
